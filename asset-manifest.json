@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/MavisReactBotMenuMiniApp/static/css/main.6a588958.css",
-    "main.js": "/MavisReactBotMenuMiniApp/static/js/main.6c9eeb08.js",
+    "main.js": "/MavisReactBotMenuMiniApp/static/js/main.b5571b79.js",
     "static/js/453.e592ebbe.chunk.js": "/MavisReactBotMenuMiniApp/static/js/453.e592ebbe.chunk.js",
     "index.html": "/MavisReactBotMenuMiniApp/index.html",
     "main.6a588958.css.map": "/MavisReactBotMenuMiniApp/static/css/main.6a588958.css.map",
-    "main.6c9eeb08.js.map": "/MavisReactBotMenuMiniApp/static/js/main.6c9eeb08.js.map",
+    "main.b5571b79.js.map": "/MavisReactBotMenuMiniApp/static/js/main.b5571b79.js.map",
     "453.e592ebbe.chunk.js.map": "/MavisReactBotMenuMiniApp/static/js/453.e592ebbe.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.6a588958.css",
-    "static/js/main.6c9eeb08.js"
+    "static/js/main.b5571b79.js"
   ]
 }
