@@ -101,7 +101,7 @@ const App = () => {
       );
       console.log('Response:', response.data);
       showPopup({
-        message: JSON.stringify(response.data)
+        message: JSON.stringify(response)
       });
       window.Telegram.WebApp.close();
     } catch (error) {
