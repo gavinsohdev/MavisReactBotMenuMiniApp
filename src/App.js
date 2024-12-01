@@ -103,7 +103,7 @@ const App = () => {
           "Content-Type": "application/json",
         },
       });
-      response
+      response?.status
         ? handlePopup({ title: "Info", message: "Success" })
         : handlePopup({ title: "Info", message: "Failure" });
     } catch (error) {
