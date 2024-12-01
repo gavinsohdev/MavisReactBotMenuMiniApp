@@ -80,6 +80,13 @@ const App = () => {
     }
   };
 
+  const handlePopup = ({ title = 'Default Title', message = 'Default Message'}) => {
+    showPopup({
+      title,
+      message
+    })
+  }
+
   const handleUpload = async () => {
     const payload = {
       id: InitDataUnsafe?.user?.id || 'defaultChatId',
@@ -99,11 +106,7 @@ const App = () => {
           },
         }
       );
-      console.log('Response:', response.data);
-      showPopup({
-        title: "Info",
-        message: JSON.stringify(response)
-      });
+      handlePopup('Info', JSON.stringify(response))
       window.Telegram.WebApp.close();
     } catch (error) {
       console.error('Error submitting data:', error);
