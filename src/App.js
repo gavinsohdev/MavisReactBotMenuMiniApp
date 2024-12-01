@@ -88,7 +88,6 @@ const App = () => {
   };
 
   const handleUpload = async () => {
-    handlePopup("Info", "Test");
     impactOccurred("light");
     const payload = {
       id: InitDataUnsafe?.user?.id || "defaultChatId",
@@ -104,7 +103,7 @@ const App = () => {
           "Content-Type": "application/json",
         },
       });
-      // handlePopup("Info", JSON.stringify(response));
+      response ? handlePopup("Info", "Success") : handlePopup("Info", "Failure")
     } catch (error) {
       console.error("Error submitting data:", error);
     }
