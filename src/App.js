@@ -103,9 +103,8 @@ const App = () => {
           "Content-Type": "application/json",
         },
       });
-      console.log(response)
       response
-        ? handlePopup("Info", JSON.stringify(response))
+        ? handlePopup("Info", 'Success')
         : handlePopup("Info", "Failure");
     } catch (error) {
       console.error("Error submitting data:", error);
