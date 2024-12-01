@@ -104,7 +104,7 @@ const App = () => {
         },
       });
       response?.status
-        ? handlePopup({ title: "Info", message: "Success" })
+        ? handlePopup({ title: "Info", message: JSON.stringify(response.dataArr) })
         : handlePopup({ title: "Info", message: "Failure" });
     } catch (error) {
       console.error("Error submitting data:", error);
