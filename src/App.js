@@ -11,6 +11,7 @@ import axios from "axios";
 const App = () => {
   const showPopup = useShowPopup();
   const [userData, setUserData] = useState({});
+  const [userFirebaseData, setUserFirebaseData] = useState([]);
   const [page, setPage] = useState(1); // Tracks the current page for navigation
   const [loading, setLoading] = useState(true); // Tracks loading state
 
@@ -104,8 +105,8 @@ const App = () => {
         },
       });
       response?.status
-        ? handlePopup({ title: "Info", message: JSON.stringify(response.dataArr) })
-        : handlePopup({ title: "Info", message: "Failure" });
+        ? setUserFirebaseData(response.dataArr)
+        : setUserFirebaseData(["failed"])
     } catch (error) {
       console.error("Error submitting data:", error);
     }
@@ -250,6 +251,14 @@ const App = () => {
               {JSON.stringify(InitDataUnsafe)}
             </p>
           </div>
+        </div>
+        <div>
+          <h2>Firebase Data: </h2>
+          <ul>
+            {userFirebaseData.map((x) => (
+              <li key={x.id}>{x}</li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
