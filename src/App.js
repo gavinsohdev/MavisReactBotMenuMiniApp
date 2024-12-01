@@ -114,7 +114,7 @@ const App = () => {
   const handleGetUser = async () => {
     impactOccurred("light")
     const payload = {
-      id: String(InitDataUnsafe?.user?.id) || null
+      id: InitDataUnsafe?.user?.id || null
     }
     if (payload.id) {
       try {
