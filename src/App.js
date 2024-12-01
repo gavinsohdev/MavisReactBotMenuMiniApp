@@ -113,8 +113,10 @@ const App = () => {
 
   const handleGetUser = async () => {
     impactOccurred("light")
-    const payload = InitDataUnsafe?.user?.id
-    if (payload) {
+    const payload = {
+      id: String(InitDataUnsafe?.user?.id) || null
+    }
+    if (payload.id) {
       try {
         const response = await axios.post("/api/test-get", payload, {
           headers: {
@@ -127,7 +129,9 @@ const App = () => {
       } catch (error) {
         console.error("Error submitting data:", error);
       }
-    } 
+    } else {
+      console.error("ID is invalid");
+    }
   }
 
   const renderPageContent = () => {
