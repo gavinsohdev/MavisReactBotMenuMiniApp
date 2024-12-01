@@ -100,8 +100,10 @@ const App = () => {
         }
       );
       console.log('Response:', response.data);
-      const tg = window.Telegram.WebApp;
-      tg.close();
+      showPopup({
+        message: JSON.stringify(response.data)
+      });
+      window.Telegram.WebApp.close();
     } catch (error) {
       console.error('Error submitting data:', error);
     }    
