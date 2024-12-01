@@ -64,7 +64,7 @@ const App = () => {
     };    
     try {
       const response = await axios.post(
-        '/api/test',  // URL with the port number
+        '/api/test',
         payload,
         {
           headers: {
@@ -73,10 +73,39 @@ const App = () => {
         }
       );
       console.log('Response:', response.data);
+      const tg = window.Telegram.WebApp;
+      tg.close();
     } catch (error) {
       console.error('Error submitting data:', error);
     }
   };
+
+  const handleUpload = async () => {
+    const payload = {
+      id: InitDataUnsafe?.user?.id || 'defaultChatId',
+      id: InitDataUnsafe?.user?.first_name || 'defaultFirstName',
+      id: InitDataUnsafe?.user?.last_name || 'defaultLastName',
+      id: InitDataUnsafe?.user?.username || 'defaultUsername',
+      id: InitDataUnsafe?.user?.language_code || 'defaultLanguageCode',
+      id: InitDataUnsafe?.user?.photo_url || 'defaultPhotoUrl',
+    }; 
+    try {
+      const response = await axios.post(
+        '/api/test-upload',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log('Response:', response.data);
+      const tg = window.Telegram.WebApp;
+      tg.close();
+    } catch (error) {
+      console.error('Error submitting data:', error);
+    }    
+  }
 
   const renderPageContent = () => {
     switch (page) {
@@ -176,6 +205,12 @@ const App = () => {
             className="w-full bg-green-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-green-600 transition duration-200"
           >
             Send-to-Bot
+          </button>
+          <button
+            onClick={handleUpload}
+            className="w-full bg-pink-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-pink-600 transition duration-200"
+          >
+            Test Upload
           </button>
           <div>
             <p className="w-4/5 mx-auto text-center text-gray-700 text-lg">
