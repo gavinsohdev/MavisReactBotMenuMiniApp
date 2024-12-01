@@ -14,7 +14,8 @@ const App = () => {
   const [page, setPage] = useState(1); // Tracks the current page for navigation
   const [loading, setLoading] = useState(true); // Tracks loading state
 
-  const [impactOccurred, notificationOccurred, selectionChanged] = useHapticFeedback();
+  const [impactOccurred, notificationOccurred, selectionChanged] =
+    useHapticFeedback();
   const [InitDataUnsafe, InitData] = useInitData();
 
   useEffect(() => {
@@ -59,59 +60,54 @@ const App = () => {
 
   const handleSubmit = async () => {
     const payload = {
-      chatId: InitDataUnsafe?.user?.id || 'defaultChatId',
-      message: 'hi',
-    };    
+      chatId: InitDataUnsafe?.user?.id || "defaultChatId",
+      message: "hi",
+    };
     try {
-      const response = await axios.post(
-        '/api/test',
-        payload,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      console.log('Response:', response.data);
+      const response = await axios.post("/api/test", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Response:", response.data);
       const tg = window.Telegram.WebApp;
       tg.close();
     } catch (error) {
-      console.error('Error submitting data:', error);
+      console.error("Error submitting data:", error);
     }
   };
 
-  const handlePopup = ({ title = 'Default Title', message = 'Default Message'}) => {
+  const handlePopup = ({
+    title = "Default Title",
+    message = "Default Message",
+  }) => {
     showPopup({
       title,
-      message
-    })
-  }
+      message,
+    });
+  };
 
   const handleUpload = async () => {
+    impactOccurred("light");
     const payload = {
-      id: InitDataUnsafe?.user?.id || 'defaultChatId',
-      firstName: InitDataUnsafe?.user?.first_name || 'defaultFirstName',
-      lastName: InitDataUnsafe?.user?.last_name || 'defaultLastName',
-      username: InitDataUnsafe?.user?.username || 'defaultUsername',
-      language: InitDataUnsafe?.user?.language_code || 'defaultLanguageCode',
-      photoUrl: InitDataUnsafe?.user?.photo_url || 'defaultPhotoUrl',
-    }; 
+      id: InitDataUnsafe?.user?.id || "defaultChatId",
+      firstName: InitDataUnsafe?.user?.first_name || "defaultFirstName",
+      lastName: InitDataUnsafe?.user?.last_name || "defaultLastName",
+      username: InitDataUnsafe?.user?.username || "defaultUsername",
+      language: InitDataUnsafe?.user?.language_code || "defaultLanguageCode",
+      photoUrl: InitDataUnsafe?.user?.photo_url || "defaultPhotoUrl",
+    };
     try {
-      const response = await axios.post(
-        '/api/test-upload',
-        payload,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      handlePopup('Info', JSON.stringify(response))
-      window.Telegram.WebApp.close();
+      const response = await axios.post("/api/test-upload", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      handlePopup("Info", JSON.stringify(response));
     } catch (error) {
-      console.error('Error submitting data:', error);
-    }    
-  }
+      console.error("Error submitting data:", error);
+    }
+  };
 
   const renderPageContent = () => {
     switch (page) {
