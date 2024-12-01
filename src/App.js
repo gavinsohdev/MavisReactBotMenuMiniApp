@@ -83,11 +83,11 @@ const App = () => {
   const handleUpload = async () => {
     const payload = {
       id: InitDataUnsafe?.user?.id || 'defaultChatId',
-      id: InitDataUnsafe?.user?.first_name || 'defaultFirstName',
-      id: InitDataUnsafe?.user?.last_name || 'defaultLastName',
-      id: InitDataUnsafe?.user?.username || 'defaultUsername',
-      id: InitDataUnsafe?.user?.language_code || 'defaultLanguageCode',
-      id: InitDataUnsafe?.user?.photo_url || 'defaultPhotoUrl',
+      firstName: InitDataUnsafe?.user?.first_name || 'defaultFirstName',
+      lastName: InitDataUnsafe?.user?.last_name || 'defaultLastName',
+      username: InitDataUnsafe?.user?.username || 'defaultUsername',
+      language: InitDataUnsafe?.user?.language_code || 'defaultLanguageCode',
+      photoUrl: InitDataUnsafe?.user?.photo_url || 'defaultPhotoUrl',
     }; 
     try {
       const response = await axios.post(
