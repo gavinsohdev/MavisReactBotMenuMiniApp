@@ -103,6 +103,7 @@ const App = () => {
           "Content-Type": "application/json",
         },
       });
+      console.log(response)
       response
         ? handlePopup("Info", 'Success')
         : handlePopup("Info", "Failure");
