@@ -114,7 +114,7 @@ const App = () => {
   const handleGetUser = async () => {
     impactOccurred("light")
     const payload = InitDataUnsafe?.user?.id
-    if (id) {
+    if (payload) {
       try {
         const response = await axios.post("/api/test-get", payload, {
           headers: {
