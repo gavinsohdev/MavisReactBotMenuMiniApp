@@ -81,7 +81,7 @@ const App = () => {
     title = "Default Title",
     message = "Default Message",
   }) => {
-    showPopup({
+    return showPopup({
       title,
       message,
     });
