@@ -111,6 +111,25 @@ const App = () => {
     }
   };
 
+  const handleGetUser = async () => {
+    impactOccurred("light")
+    const payload = InitDataUnsafe?.user?.id
+    if (id) {
+      try {
+        const response = await axios.post("/api/test-get", payload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        response?.status
+          ? handlePopup({ title: "Info", message: JSON.stringify(response) })
+          : handlePopup({ title: "Info", message: "Failure" });
+      } catch (error) {
+        console.error("Error submitting data:", error);
+      }
+    } 
+  }
+
   const renderPageContent = () => {
     switch (page) {
       case 1:
@@ -215,6 +234,12 @@ const App = () => {
             className="w-full bg-pink-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-pink-600 transition duration-200"
           >
             Test Upload
+          </button>
+          <button
+            onClick={handleGetUser}
+            className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-orange-600 transition duration-200"
+          >
+            Test Get User
           </button>
           <div>
             <p className="w-4/5 mx-auto text-center text-gray-700 text-lg">
