@@ -105,18 +105,18 @@ const App = () => {
         },
       });
       response?.status
-        ? setUserFirebaseData(response.dataArr)
-        : setUserFirebaseData(["failed"])
+        ? handlePopup({ title: "Info", message: "Success" })
+        : handlePopup({ title: "Info", message: "Failure" });
     } catch (error) {
       console.error("Error submitting data:", error);
     }
   };
 
   const handleGetUser = async () => {
-    impactOccurred("light")
+    impactOccurred("light");
     const payload = {
-      id: InitDataUnsafe?.user?.id || null
-    }
+      id: InitDataUnsafe?.user?.id || null,
+    };
     if (payload.id) {
       try {
         const response = await axios.post("/api/test-get", payload, {
@@ -124,16 +124,14 @@ const App = () => {
             "Content-Type": "application/json",
           },
         });
-        response?.status
-          ? handlePopup({ title: "Info", message: JSON.stringify(response) })
-          : handlePopup({ title: "Info", message: "Failure" });
+        response?.status && setUserFirebaseData(response.dataArr)
       } catch (error) {
         console.error("Error submitting data:", error);
       }
     } else {
       console.error("ID is invalid");
     }
-  }
+  };
 
   const renderPageContent = () => {
     switch (page) {
