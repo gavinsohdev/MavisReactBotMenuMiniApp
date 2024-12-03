@@ -9,33 +9,162 @@ import {
 import axios from "axios";
 
 const App = () => {
+  // Hooks for various states
   const showPopup = useShowPopup();
-  const [userData, setUserData] = useState({});
-  const [userFirebaseData, setUserFirebaseData] = useState("");
+  const [impactOccurred ] = useHapticFeedback();
+  const [InitDataUnsafe ] = useInitData();
+  
+  const [profileData, setProfileData] = useState({});
+  const [userFirebaseData, setUserFirebaseData] = useState({});
   const [page, setPage] = useState(1);
   const [coin, setCoin] = useState(0);
   const [isRegistered, setIsRegistered] = useState(false);
-
-  const [impactOccurred, notificationOccurred, selectionChanged] =
-    useHapticFeedback();
-  const [InitDataUnsafe, InitData] = useInitData();
+  const [newCoinAmount, setNewCoinAmount] = useState("");
 
   useEffect(() => {
     const tg = window.Telegram.WebApp;
     tg.ready();
-    const { photo_url, first_name, last_name } = InitDataUnsafe?.user || {};
-    setUserData({ photo_url, first_name, last_name });
-    fetchAndUpdateUserData();
+  
+    const { photo_url, first_name, last_name, id, username, language_code } = InitDataUnsafe?.user || {};
+    const ExtractedInitDataUnsafe = {
+      photo_url,
+      first_name,
+      last_name,
+      id: String(id),
+      username,
+      language_code,
+    };
+  
+    // Only update profile data if it hasn't been set yet
+    if (!profileData.id) {
+      setProfileData(ExtractedInitDataUnsafe);
+    }
+  
+    const fetchData = async (id) => {
+      try {
+        const response = await isUserRegistered(id); // Wait for the result
+        if (response) {
+          const dataChanged = hasDataChanged(InitDataUnsafe?.user, response);
+          dataChanged && updateUser(dataChanged);
+        }
+        handleGetUserCoins();
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+  
+    if (profileData.id) {
+      fetchData(profileData.id); // Only call fetchData if profileData.id is available
+    }
+  }, [InitDataUnsafe, profileData]); // Add profileData to the dependency array to track changes  
 
-    tg.onEvent("mainButtonClicked", function () {
-      const dataToSend = { status: "clicked", timestamp: Date.now() };
-      tg.sendData(JSON.stringify(dataToSend));
-      tg.close();
+  const getPayload = () => ({
+    id: String(InitDataUnsafe?.user?.id),
+    first_name: InitDataUnsafe?.user?.first_name,
+    last_name: InitDataUnsafe?.user?.last_name,
+    username: InitDataUnsafe?.user?.username,
+    language_code: InitDataUnsafe?.user?.language_code,
+    photo_url: InitDataUnsafe?.user?.photo_url,
+  });
+
+  const getUser = async (id) => {
+    try {
+      const { data: { status = false, dataObj = {} } } = await axios.post("/api/get-user", { id }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("dataObj: " + JSON.stringify(dataObj))
+      if (status) {
+        // Only set state if dataObj is different from current state
+        if (JSON.stringify(dataObj) !== JSON.stringify(userFirebaseData)) {
+          setUserFirebaseData(dataObj);
+        }
+        return dataObj;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
+  };
+
+  const hasDataChanged = (newData, oldData) => {
+    // Clone the objects and remove keys to ignore
+    const newClone = { ...newData };
+    const oldClone = { ...oldData };
+
+    // Remove ignored keys from the clones
+    delete newClone.allows_write_to_pm;
+    delete oldClone.allows_write_to_pm;
+
+    // Initialize an object to store changed fields
+    const changedFields = {};
+
+    // Compare newClone and oldClone for changes
+    Object.keys(newClone).forEach((key) => {
+      if (newClone[key] !== oldClone[key]) {
+        changedFields[key] = String(newClone[key]);
+      }
     });
-  }, [InitDataUnsafe]);
+
+    // Return null if no changes are found, otherwise return the changed fields
+    return Object.keys(changedFields).length > 0 ? changedFields : null;
+  }
+
+  const isUserRegistered = async (id) => {
+    try {
+      const response = await getUser(id);
+      if (response) {
+        setIsRegistered(true);
+        return response
+      } else {
+        setIsRegistered(false)
+        return false
+      }
+    } catch (error) {
+      setIsRegistered(false);
+      console.error("Error | isUserRegistered | ", error);     
+    }
+  }
+
+  const registerUser = async () => {
+    try {
+      const response = await axios.post("/api/register-user", getPayload(), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response?.status) {
+        setUserFirebaseData(getPayload());
+        setIsRegistered(true);
+      } else {
+        setIsRegistered(false);
+        console.error("registerUser failed");
+      }
+    } catch (error) {
+      console.error("Error | registerUser | ", error);
+    }
+  };
+
+  const updateUser = async (payload) => {
+    try {
+      const response = await axios.post("/api/update-user", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response?.status) {
+        setUserFirebaseData(getPayload());
+      } else {
+        console.error("updateUser failed");
+      }
+    } catch (error) {
+      console.error("Error | updateUser | ", error);
+    }
+  };
 
   const handleGetUserCoins = async () => {
-    impactOccurred("light");
     const payload = {
       id: String(InitDataUnsafe?.user?.id),
     };
@@ -46,7 +175,37 @@ const App = () => {
             "Content-Type": "application/json",
           },
         });
-        setCoin(response?.data?.coin);
+        const coin = response?.data?.coin;
+        console.log("coin: " + coin)
+        if (coin !== undefined) {
+          setCoin(coin);
+          return coin;
+        } else {
+          return null;
+        }
+      } catch (error) {
+        console.error("Error submitting data:", error);
+        return null;
+      }
+    } else {
+      console.error("ID is invalid");
+    }
+  };
+
+  const handleUpdateUserCoins = async (new_coin_amt) => {
+    const payload = {
+      id: String(InitDataUnsafe?.user?.id),
+      coinAmount: new_coin_amt,
+    };
+    if (payload.id) {
+      try {
+        const response = await axios.post("/api/update-coins", payload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        console.log(`handleUpdateUserCoins: ` + JSON.stringify(response));
+        setCoin(new_coin_amt);
       } catch (error) {
         console.error("Error submitting data:", error);
       }
@@ -55,50 +214,14 @@ const App = () => {
     }
   };
 
-  async function fetchAndUpdateUserData() {
-    const { status = false, dataArr = [] } = await handleGetUser();
-    if (status) {
-      handleGetUserCoins();
-      setIsRegistered(status);
-      const dataChanged = hasDataChanged(InitDataUnsafe.user, dataArr[0]);
-      console.log("Old: " + JSON.stringify(InitDataUnsafe.user));
-      console.log("New: " + JSON.stringify(dataArr[0]));
-      console.log("dataChanged: " + dataChanged);
-      dataChanged && handleUpload();
+  const handleUpdateUserCoinsSubmit = async () => {
+    const coinValue = parseInt(newCoinAmount, 10);
+    if (!isNaN(coinValue)) {
+      await handleUpdateUserCoins(coinValue);
     } else {
-      setIsRegistered(status);
+      console.error("Invalid coin amount");
     }
-  }
-
-  function hasDataChanged(newData, oldData) {
-    // Clone the objects to avoid modifying the original data
-    const newClone = { ...newData };
-    const oldClone = { ...oldData };
-
-    // Remove the keys to ignore
-    delete newClone.allows_write_to_pm;
-
-    console.log("newClone: " + JSON.stringify(newClone));
-    console.log("oldClone: " + JSON.stringify(oldClone));
-
-    // Deep comparison of objects
-    const areObjectsEqual = (obj1, obj2) => {
-      const keys1 = Object.keys(obj1);
-      const keys2 = Object.keys(obj2);
-
-      // Check if both objects have the same keys
-      if (keys1.length !== keys2.length) return false;
-
-      // Check each key-value pair
-      for (const key of keys1) {
-        if (obj1[key] !== obj2[key]) return false;
-      }
-
-      return true;
-    };
-
-    return !areObjectsEqual(newClone, oldClone);
-  }
+  };
 
   // Handle the back button click
   const handleBackButtonClick = () => {
@@ -108,7 +231,6 @@ const App = () => {
     } else {
       // Go back a page otherwise
       setPage((prevPage) => prevPage - 1);
-      impactOccurred("light");
     }
   };
 
@@ -121,7 +243,6 @@ const App = () => {
 
   const handleNextPage = () => {
     setPage((prevPage) => prevPage + 1);
-    impactOccurred("light");
   };
 
   const handleSubmit = async () => {
@@ -151,63 +272,6 @@ const App = () => {
       title,
       message,
     });
-  };
-
-  function getPayload(InitDataUnsafe) {
-    return {
-      id: String(InitDataUnsafe?.user?.id),
-      first_name: InitDataUnsafe?.user?.first_name,
-      last_name: InitDataUnsafe?.user?.last_name,
-      username: InitDataUnsafe?.user?.username,
-      language_code: InitDataUnsafe?.user?.language_code,
-      photo_url: InitDataUnsafe?.user?.photo_url,
-    };
-  }
-
-  const handleUpload = async () => {
-    impactOccurred("light");
-    const payload = getPayload(InitDataUnsafe);
-    try {
-      const response = await axios.post("/api/test-upload", payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (response?.status) {
-        setUserFirebaseData(getPayload(InitDataUnsafe));
-        setIsRegistered(true);
-      } else {
-        handlePopup({ title: "Info", message: "Failure" });
-      }
-    } catch (error) {
-      console.error("Error submitting data:", error);
-    }
-  };
-
-  const handleGetUser = async () => {
-    impactOccurred("light");
-    const payload = {
-      id: String(InitDataUnsafe?.user?.id),
-    };
-    if (payload.id) {
-      try {
-        const response = await axios.post("/api/test-get", payload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (response?.data?.status) {
-          setUserFirebaseData(response.data.dataArr[0]);
-          return response.data;
-        } else {
-          return { status: false };
-        }
-      } catch (error) {
-        console.error("Error submitting data:", error);
-      }
-    } else {
-      console.error("ID is invalid");
-    }
   };
 
   const renderPageContent = () => {
@@ -247,7 +311,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-6">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">
-          Welcome back, {userData?.first_name}
+          Welcome back, {profileData?.first_name}
         </h1>
         <p className="text-lg text-gray-600 mt-2">
           We're glad to see you again!
@@ -295,6 +359,33 @@ const App = () => {
               Coins: <span className="text-yellow-600 font-bold">{coin}</span>
             </div>
           </div>
+          <div className="flex flex-col items-center space-y-4 p-4 bg-white shadow-lg rounded-lg w-full max-w-md">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Update User Coins
+            </h2>
+            <div className="flex flex-col space-y-2 w-full">
+              <label
+                htmlFor="coinInput"
+                className="text-sm font-medium text-gray-600"
+              >
+                Enter new coin amount:
+              </label>
+              <input
+                id="coinInput"
+                type="number"
+                value={newCoinAmount}
+                onChange={(e) => setNewCoinAmount(e.target.value)}
+                placeholder="Enter coins"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              />
+            </div>
+            <button
+              onClick={handleUpdateUserCoinsSubmit}
+              className="px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+            >
+              Update Coins
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -305,10 +396,10 @@ const App = () => {
       <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-8">
         <h1 className="text-3xl font-bold">Telegram Mini App</h1>
 
-        {userData.photo_url && (
+        {profileData.photo_url && (
           <div className="flex justify-center mb-6">
             <img
-              src={userData.photo_url}
+              src={profileData.photo_url}
               alt="User Profile"
               className="w-20 h-20 rounded-full shadow-md"
             />
@@ -317,7 +408,7 @@ const App = () => {
 
         <div className="text-center">
           <p className="text-lg font-semibold text-gray-700">
-            {userData.first_name} {userData.last_name}
+            {profileData.first_name} {profileData.last_name}
           </p>
           <p className="mt-2 text-gray-500">Current Page: {page}</p>
         </div>
@@ -353,21 +444,17 @@ const App = () => {
             Send-to-Bot
           </button>
           <button
-            onClick={handleUpload}
+            onClick={registerUser}
             className="w-full bg-pink-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-pink-600 transition duration-200"
           >
             Register
           </button>
           <button
-            onClick={handleGetUser}
+            onClick={getUser(profileData.id)}
             className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-orange-600 transition duration-200"
           >
             Test Get User
           </button>
-        </div>
-        <div>
-          <h2>Firebase Data: </h2>
-          <ul>{JSON.stringify(userFirebaseData)}</ul>
         </div>
       </div>
     </div>
