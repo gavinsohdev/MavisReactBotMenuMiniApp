@@ -16,6 +16,7 @@ const AdminPage = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+  const [activeTab, setActiveTab] = useState("rewards"); // State to track the active tab
 
   useEffect(() => {
     // Fetch all rewards when the component mounts
@@ -186,28 +187,53 @@ const AdminPage = () => {
 
   return (
     <div className="p-2 bg-gray-100 min-h-screen border-2 border-gray-200 rounded-lg">
-      <h1 className="text-2xl font-semibold text-center mb-2">
-        Manage Rewards
-      </h1>
-      <div className="space-y-4">
-        <RewardsList
-          rewards={rewards}
-          handleUpdateReward={handleUpdateReward}
-          handleDeleteReward={handleDeleteReward}
-        />
+      <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
+
+      {/* Tabs */}
+      <div className="flex justify-center space-x-4 mb-4">
+        <button
+          className={`px-4 py-2 rounded-lg ${activeTab === "rewards" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"}`}
+          onClick={() => setActiveTab("rewards")}
+        >
+          Manage Rewards
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg ${activeTab === "orders" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"}`}
+          onClick={() => setActiveTab("orders")}
+        >
+          Manage Orders
+        </button>
       </div>
+
+      {/* Content for each Tab */}
+      {activeTab === "rewards" && (
+        <div className="space-y-4">
+          <RewardsList
+            rewards={rewards}
+            handleUpdateReward={handleUpdateReward}
+            handleDeleteReward={handleDeleteReward}
+          />
+        </div>
+      )}
+
+      {activeTab === "orders" && (
+        <div className="space-y-4">
+          <h2>Manage Orders</h2>
+          <p>Manage orders content goes here...</p>
+        </div>
+      )}
+
       {/* Floating Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-4 right-4 bg-green-500 text-white p-6 rounded-full shadow-2xl hover:bg-green-600 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300 transform transition-all duration-300 ease-in-out"
+        className="fixed bottom-4 right-4 bg-green-500 text-white w-16 h-16 flex items-center justify-center rounded-full shadow-2xl hover:bg-green-600 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300 transform transition-all duration-300 ease-in-out"
       >
         <span className="text-3xl font-bold">+</span>
       </button>
+
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-          Add New Reward
-        </h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add New Reward</h2>
         <div className="space-y-6">
           <input
             type="text"

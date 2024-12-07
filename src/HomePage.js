@@ -10,7 +10,6 @@ import {
   useInitData,
 } from "@vkruglikov/react-telegram-web-app";
 import { QRCodeSVG } from "qrcode.react";
-import { Scanner } from "@yudiel/react-qr-scanner";
 import axios from "axios";
 
 const App = () => {
@@ -60,6 +59,7 @@ const App = () => {
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.isVerticalSwipesEnabled = false;
+    tg.setHeaderColor("#ee1c25");
     const { photo_url, first_name, last_name, id, username, language_code } =
       InitDataUnsafe?.user || {};
     const ExtractedInitDataUnsafe = {
@@ -330,6 +330,25 @@ const App = () => {
     }
   };
 
+  const handleScanQR = () => {
+    const tg = window.Telegram.WebApp;
+    tg.showScanQrPopup({}, (qrText) => {
+      if (qrText) {
+        // setTargetUserId(qrText); // Update target user ID with scanned text
+        handleGetUserCoins(qrText);
+        setShowScanner(false); // Close the scanner popup
+        return true; // Close popup automatically
+      }
+      return false; // Keep the popup open
+    });
+  };
+
+  const handleCloseScanner = () => {
+    const tg = window.Telegram.WebApp;
+    tg.closeScanQrPopup(); // Close the scanner manually
+    setShowScanner(false);
+  };
+
   // const verifySignature = async (payload) => {
   //   try {
   //     const response = await axios.post("/api/verify-signature", payload, {
@@ -428,8 +447,12 @@ const App = () => {
   };
 
   const LoadingOverlay = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="w-16 h-16 border-4 border-t-transparent border-yellow-400 rounded-full animate-spin"></div>
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+      <div className="flex space-x-2">
+        <div className="w-6 h-6 bg-[#e22028] animate-bounce delay-100"></div>
+        <div className="w-6 h-6 bg-[#e22028] animate-bounce delay-200"></div>
+        <div className="w-6 h-6 bg-[#e22028] animate-bounce delay-300"></div>
+      </div>
     </div>
   );
 
@@ -437,19 +460,19 @@ const App = () => {
     <div>
       {isLoading && <LoadingOverlay />}
       {isRegistered ? (
-        <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-6">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">
+        <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-6">
+          <div className="text-center py-6 px-4">
+            <h1 className="text-2xl font-semibold text-gray-800 mb-2">
               Welcome back,{" "}
               {roleType === "Teacher"
                 ? "Teacher"
                 : roleType === "Admin"
                 ? "Admin"
                 : "Student"}{" "}
-              {profileData?.first_name}
+              <span className="text-red-600">{profileData?.first_name}</span>
             </h1>
-            <p className="text-lg text-gray-600 mt-2">
-              We're glad to see you again!
+            <p className="text-lg text-gray-600">
+              We're glad to see you again! 🎉
             </p>
           </div>
           <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
@@ -460,7 +483,7 @@ const App = () => {
             )}
             <div className="space-y-8">
               {/* User Data List */}
-              <ul className="space-y-4">
+              <ul className="space-y-6 bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
                 {[
                   "photo_url",
                   "first_name",
@@ -469,18 +492,21 @@ const App = () => {
                   "language_code",
                   "id",
                 ].map((key) => (
-                  <li key={key} className="flex items-center space-x-4">
-                    <span className="font-medium text-gray-600 capitalize w-32">
+                  <li
+                    key={key}
+                    className="flex items-center space-x-6 border-b border-gray-200 pb-4 last:border-b-0"
+                  >
+                    <span className="font-semibold text-gray-600 capitalize w-36">
                       {key.replace(/_/g, " ")}:
                     </span>
                     {key === "photo_url" ? (
                       <img
                         src={userDisplayData[key]}
                         alt={`${userDisplayData.first_name}'s avatar`}
-                        className="w-16 h-16 rounded-full border border-gray-300"
+                        className="w-16 h-16 rounded-full border-2 border-gray-300 shadow-md"
                       />
                     ) : (
-                      <span className="text-gray-800">
+                      <span className="text-gray-800 break-words">
                         {userDisplayData[key]}
                       </span>
                     )}
@@ -489,70 +515,58 @@ const App = () => {
               </ul>
               {roleType === "Student" && (
                 <>
-                  <div className="flex items-center justify-center space-x-4 border-2 border-yellow-500 p-4 rounded-lg">
-                    {/* Coin Icon */}
-                    {/* <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-yellow-500 border-2 border-yellow-700 flex items-center justify-center text-yellow-100 font-bold animate-spin-slow">
-                        💰
-                      </div>
-                    </div> */}
-
+                  <div className="flex items-center justify-center space-x-4 p-5 rounded-lg shadow-xl bg-white">
                     {/* Coin Value */}
-                    <div className="text-gray-800 text-lg font-semibold">
+                    <div className="text-gray-900 text-lg font-medium">
                       Coins:{" "}
-                      <span className="text-yellow-600 font-bold">
-                        🪙{coin}
+                      <span className="text-yellow-600 font-bold text-lg">
+                        {coin} 🪙
                       </span>
                     </div>
 
                     {/* Refresh Button */}
                     <button
                       onClick={() => handleRefreshCoins(profileData.id)}
-                      className="flex items-center justify-center h-10 rounded-xl bg-blue-100 border-2 border-blue-300 hover:bg-blue-300 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                      className="flex items-center justify-center h-10 px-4 rounded-full bg-blue-200 border-2 border-blue-400 hover:bg-blue-300 text-gray-800 font-medium transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                       aria-label="Refresh Coins"
                     >
-                      <div className="text-gray-500 text-sm font-semibold mx-2">
-                        🔄Refresh
+                      <div className="text-gray-600 text-sm font-semibold mx-2">
+                        🔄
                       </div>
                     </button>
                   </div>
+
                   {/* Go to Shop Button */}
                   <Link
                     to={{
                       pathname: "/shop",
                       search: `?id=${InitDataUnsafe?.user?.id}`, // Adding a query parameter to the URL
                     }}
-                    className="flex items-center justify-center space-x-4 p-4 rounded-lg shadow-lg  bg-green-100 border-2 border-green-300 hover:bg-green-300 text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+                    className="flex items-center justify-center space-x-4 p-5 rounded-lg shadow-lg bg-green-200 border-2 border-green-400 hover:bg-green-300 text-gray-800 font-medium transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   >
-                    Shop 🛍️
+                    <span className="text-lg">Redeem Coins 🛍️</span>
                   </Link>
                 </>
               )}
               {roleType === "Teacher" && (
-                <div className="flex flex-col space-y-2 w-full">
-                  <h2 className="text-lg font-semibold text-gray-700 text-center">
-                    Update User Coins
-                  </h2>
-                  <label
-                    htmlFor="coinInput"
-                    className="text-sm font-medium text-gray-600"
-                  >
-                    Enter Student's User ID:
-                  </label>
+                <div className="p-2 bg-gray-100 border-1 border-gray-200 rounded-lg">
+                  <h1 className="text-xl font-semibold text-center m-3">
+                    Update User Coins 🪙
+                  </h1>
                   <div className="flex w-full relative">
                     <input
                       type="text"
                       placeholder="Enter User ID"
                       value={targetUserId}
                       onChange={(e) => setTargetUserId(e.target.value)}
-                      className="flex-grow px-4 py-2 border border-gray-300 rounded-l-lg rounded-r-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      className="w-[80%] px-4 py-2 border border-gray-300 rounded-l-lg rounded-r-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     />
                     <button
-                      onClick={() => setShowScanner(true)}
+                      onClick={handleScanQR}
                       className="px-4 py-2 bg-gray-200 border border-gray-300 rounded-r-none hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       aria-label="Scan QR Code"
                     >
-                      📷
+                      Scan QR
                     </button>
                     <button
                       onClick={() => handleGetUserCoins(targetUserId)}
@@ -561,30 +575,6 @@ const App = () => {
                       Get
                     </button>
                   </div>
-
-                  {/* QR Scanner Modal */}
-                  {showScanner && (
-                    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-                      <div className="bg-white p-11 rounded-lg shadow-lg relative">
-                        <button
-                          onClick={() => setShowScanner(false)}
-                          className="absolute top-2 right-2 px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                          Close
-                        </button>
-                        <Scanner
-                          onScan={(result) => {
-                            setTargetUserId(result[0].rawValue);
-                            setShowScanner(false); // Close scanner after successful scan
-                          }}
-                          onError={(error) =>
-                            console.error("QR Scanner Error:", error)
-                          }
-                        />
-                      </div>
-                    </div>
-                  )}
-
                   {/* Display retrieved user details and coins */}
                   {retrievedCoins !== null && (
                     <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-md w-full">
@@ -632,7 +622,7 @@ const App = () => {
                       </p>
 
                       {/* Input and Button for Coin Update */}
-                      <div className="flex flex-col space-y-2 mt-6 w-full">
+                      <div className="flex flex-col space-y-2 w-full">
                         <label
                           htmlFor="coinInput"
                           className="text-sm font-medium text-gray-600"
@@ -653,7 +643,7 @@ const App = () => {
                           }
                           className="px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                         >
-                          Update Coins
+                          Update User's Coins
                         </button>
                       </div>
                     </div>
@@ -710,9 +700,9 @@ const App = () => {
                   onChange={(e) => setRole(e.target.value)}
                   className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="Student">Student</option>
-                  <option value="Teacher">Teacher</option>
-                  <option value="Admin">Admin</option>
+                  <option value="Student">Student 🧑‍🎓</option>
+                  <option value="Teacher">Teacher 👩‍🏫</option>
+                  <option value="Admin">Admin 👨‍💼</option>
                 </select>
               </div>
               {/* {renderPageContent()}

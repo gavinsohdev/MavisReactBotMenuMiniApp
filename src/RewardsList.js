@@ -55,7 +55,7 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                         : reward.name
                     }
                     onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
                     placeholder="Name"
                   />
                 </div>
@@ -69,7 +69,7 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                         : reward.photo_url
                     }
                     onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
                     placeholder="Photo URL"
                   />
                 </div>
@@ -83,7 +83,7 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                         : reward.price
                     }
                     onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
                     placeholder="Price"
                   />
                 </div>
@@ -97,7 +97,7 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                         : reward.quantity
                     }
                     onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
                     placeholder="Quantity"
                   />
                 </div>
@@ -129,22 +129,22 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
               </div>
             ) : (
               <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md space-y-4">
-                <p className="text-2xl font-semibold text-center text-gray-800">
+                <p className="text-lg font-semibold text-center text-gray-800">
                   {reward.name}
                 </p>
-                <p className="text-lg text-center text-gray-600">
+                <p className="text-sm text-center text-gray-600">
                   Price:{" "}
                   <span className="font-bold text-gray-800">
                     ${reward.price}
                   </span>
                 </p>
-                <p className="text-lg text-center text-gray-600">
+                <p className="text-sm text-center text-gray-600">
                   Quantity:{" "}
                   <span className="font-bold text-gray-800">
                     {reward.quantity}
                   </span>
                 </p>
-                <p className="text-lg text-center text-gray-600">
+                <p className="text-sm text-center text-gray-600">
                   Date Added:{" "}
                   <span className="font-semibold text-gray-800">
                     {formatISODate(reward.date_added)}
