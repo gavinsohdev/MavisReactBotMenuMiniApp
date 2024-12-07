@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import RewardsList from "./RewardsList";
+import ManageOrders from "./ManageOrders"
 import Modal from "./Modal"; // Import the Modal component
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
@@ -14,9 +15,10 @@ const AdminPage = () => {
     quantity: "",
     date_added: "",
   });
-  const [isEditing, setIsEditing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const [activeTab, setActiveTab] = useState("rewards"); // State to track the active tab
+
+  const [ordersWithUsers, setOrdersWithUsers] = useState([]);
 
   useEffect(() => {
     // Fetch all rewards when the component mounts
@@ -25,6 +27,7 @@ const AdminPage = () => {
       setRewards(rewardsData);
     };
     fetchRewards();
+    fetchOrdersWithUsers();
   }, []);
 
   // Handle input change for new or updating reward
@@ -185,6 +188,29 @@ const AdminPage = () => {
     }
   };
 
+  // Fetch orders with user details
+  const fetchOrdersWithUsers = async () => {
+    try {
+      const data = await getAllOrdersWithUsers(); // Call the API function
+      if (data) {
+        setOrdersWithUsers(data);
+      } else {
+        console.error("No orders with users found");
+      }
+    } catch (error) {
+      console.error("Error fetching orders with users:", error);
+    }
+  };
+
+  const getAllOrdersWithUsers = async () => {
+    try {
+      const { data: { status = false, dataObj = {} } } = await axios.get("/api/get-all-orders-with-users");
+      return status ? dataObj : null;
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
+  };
+
   return (
     <div className="p-2 bg-gray-100 min-h-screen border-2 border-gray-200 rounded-lg">
       <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
@@ -218,8 +244,9 @@ const AdminPage = () => {
 
       {activeTab === "orders" && (
         <div className="space-y-4">
-          <h2>Manage Orders</h2>
-          <p>Manage orders content goes here...</p>
+          <ManageOrders
+            data={ordersWithUsers}
+          />
         </div>
       )}
 

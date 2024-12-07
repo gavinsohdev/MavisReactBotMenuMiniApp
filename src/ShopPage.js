@@ -104,7 +104,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                           <span className="font-medium">{item.quantity}</span>
                         </p>
                         <p className="text-sm text-gray-500">
-                          Price: <span className="font-medium">${item.price}</span>
+                          Price: <span className="font-medium">{item.price} 🪙</span>
                         </p>
                       </div>
                     </div>
@@ -126,7 +126,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
               <div className="mt-6 flex justify-between items-center border-t pt-4">
                 <p className="text-lg font-bold text-gray-800">
                   Total:{" "}
-                  <span className="text-green-600">${cartData.total_price}</span>
+                  <span className="text-green-600">{cartData.total_price} 🪙</span>
                 </p>
                 <button
                   onClick={() => setView("orderSummary")}
@@ -150,7 +150,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                 >
                   <p className="font-medium text-gray-800">{item.name}</p>
                   <p className="text-gray-500">x{item.quantity}</p>
-                  <p className="text-gray-500">${item.price}</p>
+                  <p className="text-gray-500">{item.price} 🪙</p>
                 </div>
               ))}
             </div>
@@ -158,7 +158,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
             <div className="mt-6 border-t pt-4 space-y-4">
               <p className="text-lg font-bold text-gray-800">
                 Total:{" "}
-                <span className="text-green-600">${cartData.total_price}</span>
+                <span className="text-green-600">{cartData.total_price} 🪙</span>
               </p>
               <button
                 onClick={() => onCheckout(userId)}
@@ -206,12 +206,12 @@ const OrdersModal = ({ orders, onClose }) => {
                       <div>
                         <p className="font-semibold text-gray-800">{item.name}</p>
                         <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                        <p className="text-sm text-gray-500">Price: ${item.price}</p>
+                        <p className="text-sm text-gray-500">Price: {item.price} 🪙</p>
                       </div>
                     </div>
-                    <p className="text-gray-500">${item.total_price}</p>
                   </div>
                 ))}
+                <p className="text-sm text-gray-500 border-t border-gray-200">Total Coins: {order.total_price} 🪙</p>
               </div>
             </div>
           ))
@@ -564,7 +564,7 @@ const Shop = () => {
                 {reward.name}
               </h2>
               <p className="text-gray-600 text-center text-sm mb-2">
-                Price: ${reward.price}
+                Price: {reward.price} 🪙
               </p>
               <p className="text-gray-600 text-center text-sm mb-4">
                 Quantity: {reward.quantity}

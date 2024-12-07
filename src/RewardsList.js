@@ -135,7 +135,7 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                 <p className="text-sm text-center text-gray-600">
                   Price:{" "}
                   <span className="font-bold text-gray-800">
-                    ${reward.price}
+                    {reward.price} 🪙
                   </span>
                 </p>
                 <p className="text-sm text-center text-gray-600">
