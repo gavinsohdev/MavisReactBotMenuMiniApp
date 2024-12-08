@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useToast } from "./Toast";
 import RewardsList from "./RewardsList";
 import ManageOrders from "./ManageOrders"
 import Modal from "./Modal"; // Import the Modal component
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 
-const AdminPage = () => {
+const AdminPage = ({ adminData }) => {
+  const toast = useToast();
   const [rewards, setRewards] = useState([]);
   const [newReward, setNewReward] = useState({
     id: "",
@@ -211,6 +213,43 @@ const AdminPage = () => {
     }
   };
 
+  const updateOrder = async (orderId, adminData) => {
+    try {
+      const {
+        data: { status = false },
+      } = await axios.post(
+        "/api/update-order",
+        { orderId, adminData },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (status) {
+        return true;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
+  };
+
+  const handleUpdateOrder = async (orderId, adminData) => {
+    try {
+      const isUpdated = await updateOrder(orderId, adminData);
+      console.log('isUpdated handleUpdateOrder: ' + JSON.stringify(isUpdated))
+      if (isUpdated) {
+        toast("success", "Order successfully confirmed!");
+      } else {
+        toast("error", "Something went wrong confirming order!");
+      }
+    } catch (error) {
+      toast("error", "Something went wrong confirming order!");
+    }
+  };
+
   return (
     <div className="p-2 bg-gray-100 min-h-screen border-2 border-gray-200 rounded-lg">
       <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
@@ -245,7 +284,9 @@ const AdminPage = () => {
       {activeTab === "orders" && (
         <div className="space-y-4">
           <ManageOrders
+            adminData={adminData}
             data={ordersWithUsers}
+            handleUpdateOrder={handleUpdateOrder}
           />
         </div>
       )}

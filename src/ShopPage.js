@@ -181,6 +181,9 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
 };
 
 const OrdersModal = ({ orders, onClose }) => {
+  // Sort orders by date_ordered, newest first
+  const sortedOrders = [...orders].sort((a, b) => new Date(b.date_ordered) - new Date(a.date_ordered));
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-[90%] max-h-[90vh] overflow-y-auto">
@@ -191,10 +194,10 @@ const OrdersModal = ({ orders, onClose }) => {
           </button>
         </div>
 
-        {orders.length === 0 ? (
+        {sortedOrders.length === 0 ? (
           <p className="text-center text-gray-500">You have no orders yet 🛒</p>
         ) : (
-          orders.map((order, index) => (
+          sortedOrders.map((order, index) => (
             <div key={index} className="mb-6">
               <p className="text-lg font-semibold text-gray-800">Order Date: {new Date(order.date_ordered).toLocaleString()}</p>
               <p className="text-sm text-gray-500">Status: {order.status}</p>

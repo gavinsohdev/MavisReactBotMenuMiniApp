@@ -653,7 +653,7 @@ const App = () => {
               {roleType === "Admin" && (
                 <>
                   <div className="flex items-center justify-center space-x-4">
-                    <AdminPage />
+                    <AdminPage adminData={InitDataUnsafe?.user} />
                   </div>
                 </>
               )}
