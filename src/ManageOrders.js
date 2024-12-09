@@ -4,7 +4,7 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: "date_ordered", // Default sorting by date ordered
-    direction: "desc",   // Default descending order
+    direction: "desc", // Default descending order
   });
 
   // Function to sort the data based on the sortConfig state
@@ -22,17 +22,23 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
     if (key === "user") {
       const userA = a.user ? `${a.user.first_name} ${a.user.last_name}` : "";
       const userB = b.user ? `${b.user.first_name} ${b.user.last_name}` : "";
-      return direction === "asc" ? userA.localeCompare(userB) : userB.localeCompare(userA);
+      return direction === "asc"
+        ? userA.localeCompare(userB)
+        : userB.localeCompare(userA);
     }
 
     if (key === "items") {
       const itemCountA = a.order.items.length;
       const itemCountB = b.order.items.length;
-      return direction === "asc" ? itemCountA - itemCountB : itemCountB - itemCountA;
+      return direction === "asc"
+        ? itemCountA - itemCountB
+        : itemCountB - itemCountA;
     }
 
     if (key === "status") {
-      return direction === "asc" ? orderA.localeCompare(orderB) : orderB.localeCompare(orderA);
+      return direction === "asc"
+        ? orderA.localeCompare(orderB)
+        : orderB.localeCompare(orderA);
     }
 
     return 0;
@@ -71,7 +77,7 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
   };
 
   return (
-    <div className="p-4">
+    <div className="m-0 p-0">
       {data?.length === 0 ? (
         <p className="text-gray-600">No orders available.</p>
       ) : (
@@ -131,7 +137,9 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
                     {renderStatus(order.status)}
                   </td>
                   <td className="border border-gray-300 p-2">
-                    {new Date(order.date_ordered).toLocaleString().replace(",", "")}
+                    {new Date(order.date_ordered)
+                      .toLocaleString()
+                      .replace(",", "")}
                   </td>
                   <td className="border border-gray-300 p-2">
                     {user
@@ -140,7 +148,10 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
                   </td>
                   <td className="border border-gray-300 p-2">
                     {order.items.map((item, idx) => (
-                      <div key={idx} className="border-t border-gray-200 pb-4 first:border-t-0">
+                      <div
+                        key={idx}
+                        className="border-t border-gray-200 pb-4 first:border-t-0"
+                      >
                         {item.name} x{item.quantity}
                       </div>
                     ))}
@@ -154,7 +165,10 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
 
       {selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className={`bg-white rounded-lg shadow-lg w-4/5 md:w-1/2 overflow-hidden relative flex flex-col h-auto max-h-[90%]`}>
+          <div
+            className="bg-white rounded-lg shadow-lg w-4/5 md:w-1/2 overflow-y-auto relative flex flex-col max-h-[90%]"
+            style={{ maxHeight: "90vh" }} // Fallback for inline styles
+          >
             <button
               onClick={closeOrderModal}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-3xl font-bold"
@@ -162,7 +176,7 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
             >
               &times;
             </button>
-            <div className="p-6 h-full flex flex-col">
+            <div className="p-6 flex flex-col">
               <h2 className="text-xl font-semibold mb-4 text-center">
                 Order Details
               </h2>
@@ -189,7 +203,8 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
                 <strong>Order ID:</strong> {selectedOrder.order.id}
               </p>
               <div>
-                <strong>Status:</strong> {renderStatus(selectedOrder.order.status)}
+                <strong>Status:</strong>{" "}
+                {renderStatus(selectedOrder.order.status)}
               </div>
               <p className="mb-4">
                 <strong>Date Ordered:</strong>{" "}
@@ -206,7 +221,10 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
               >
                 <ul className="space-y-4">
                   {selectedOrder.order.items.map((item, idx) => (
-                    <li key={idx} className="flex items-center border-t border-gray-200 pb-4 first:border-t-0">
+                    <li
+                      key={idx}
+                      className="flex items-center border-t border-gray-200 pb-4 first:border-t-0"
+                    >
                       {item.photo_url && (
                         <img
                           src={item.photo_url}
@@ -237,7 +255,10 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
               {/* Conditionally Render Confirm Button */}
               {selectedOrder.order.status === "Pending" && (
                 <button
-                  onClick={() => handleUpdateOrder(selectedOrder.order.id, adminData)}
+                  onClick={async () => {
+                    await handleUpdateOrder(selectedOrder.order.id, adminData);
+                    closeOrderModal(); // Close the modal after updating the order
+                  }}
                   className="mt-4 bg-green-500 hover:bg-green-600 text-white py-3 rounded-md w-full text-center font-semibold"
                 >
                   Confirm
@@ -245,12 +266,21 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
               )}
 
               {/* Completed Order Info */}
-              {selectedOrder.order.status === "Completed" && selectedOrder.order.date_completed && (
-                <p className="mt-4 text-sm text-gray-600">
-                  Completed by <strong>{selectedOrder.order.date_completed.completed_by}</strong> on{" "}
-                  <strong>{new Date(selectedOrder.order.date_completed.date).toLocaleString()}</strong>
-                </p>
-              )}
+              {selectedOrder.order.status === "Completed" &&
+                selectedOrder.order.date_completed && (
+                  <p className="mt-4 text-sm text-gray-600">
+                    Completed by{" "}
+                    <strong>
+                      {selectedOrder.order.date_completed.completed_by}
+                    </strong>{" "}
+                    on{" "}
+                    <strong>
+                      {new Date(
+                        selectedOrder.order.date_completed.date
+                      ).toLocaleString()}
+                    </strong>
+                  </p>
+                )}
             </div>
           </div>
         </div>

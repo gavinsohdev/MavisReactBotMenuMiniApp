@@ -215,9 +215,7 @@ const AdminPage = ({ adminData }) => {
 
   const updateOrder = async (orderId, adminData) => {
     try {
-      const {
-        data: { status = false },
-      } = await axios.post(
+      const response = await axios.post(
         "/api/update-order",
         { orderId, adminData },
         {
@@ -226,32 +224,59 @@ const AdminPage = ({ adminData }) => {
           },
         }
       );
-      if (status) {
-        return true;
-      } else {
-        return null;
-      }
+      return response.data; // Return the actual data from the response
     } catch (error) {
       console.error("Error submitting data:", error);
+      return {
+        status: false,
+        message: error.response?.data?.message || "An unexpected error occurred.",
+      };
     }
   };
 
   const handleUpdateOrder = async (orderId, adminData) => {
     try {
-      const isUpdated = await updateOrder(orderId, adminData);
-      console.log('isUpdated handleUpdateOrder: ' + JSON.stringify(isUpdated))
-      if (isUpdated) {
-        toast("success", "Order successfully confirmed!");
+      const dataResponse = await updateOrder(orderId, adminData);
+  
+      console.log("dataResponse handleUpdateOrder:", JSON.stringify(dataResponse));
+  
+      if (dataResponse?.status) {
+        // Update the local state for the selected order
+        setOrdersWithUsers((prevOrders) =>
+          prevOrders.map((orderWithUser) =>
+            orderWithUser.order.id === orderId
+              ? {
+                  ...orderWithUser,
+                  order: {
+                    ...orderWithUser.order,
+                    status: "Completed",
+                    date_completed: {
+                      date: new Date().toISOString(),
+                      completed_by: `${adminData.first_name} ${adminData.last_name}`,
+                    },
+                  },
+                }
+              : orderWithUser
+          )
+        );
+        toast("success", dataResponse.message || "Order successfully confirmed!");
       } else {
-        toast("error", "Something went wrong confirming order!");
+        // Handle error cases with detailed messages
+        const errorMessage =
+          dataResponse?.message || "Something went wrong confirming the order!";
+        toast("error", errorMessage);
       }
     } catch (error) {
-      toast("error", "Something went wrong confirming order!");
+      console.error("Error updating order:", error);
+      toast(
+        "error",
+        error.response?.data?.message || "An unexpected error occurred."
+      );
     }
   };
 
   return (
-    <div className="p-2 bg-gray-100 min-h-screen border-2 border-gray-200 rounded-lg">
+    <div>
       <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
 
       {/* Tabs */}

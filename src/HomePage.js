@@ -315,18 +315,38 @@ const App = () => {
 
   const handleUpdateUserCoinsSubmit = async (id) => {
     const coinSend = parseInt(coinToSend, 10);
-    const coinCurrent = parseInt(retrievedCoins.coin);
-    if (!isNaN(coinSend) && coinSend !== 0 && !isNaN(coinCurrent)) {
-      const coinTotal = coinSend + coinCurrent;
+    const coinCurrent = parseInt(retrievedCoins.coin, 10);
+
+    // Validate input
+    if (isNaN(coinSend) || coinSend === 0) {
+      toast("error", "Please enter a valid number greater or less than 0!");
+      return;
+    }
+
+    if (isNaN(coinCurrent)) {
+      toast("error", "Current coin balance is invalid!");
+      return;
+    }
+
+    const coinTotal = coinSend + coinCurrent;
+
+    try {
       const response = await handleUpdateUserCoins(id, coinTotal);
-      response &&
+
+      if (response) {
+        // Update frontend state
         setRetrievedCoins((prevState) => ({
           ...prevState,
           coin: coinTotal,
         }));
-      setCoinToSend("");
-    } else {
-      toast("error", "Please enter an amount which is more or less than 0!");
+        setCoinToSend(""); // Reset input field
+        toast("success", "User's coins updated successfully!");
+      } else {
+        toast("error", "Failed to update user's coins!");
+      }
+    } catch (error) {
+      console.error("Error updating coins:", error);
+      toast("error", "An error occurred while updating coins.");
     }
   };
 
@@ -334,7 +354,7 @@ const App = () => {
     const tg = window.Telegram.WebApp;
     tg.showScanQrPopup({}, (qrText) => {
       if (qrText) {
-        // setTargetUserId(qrText); // Update target user ID with scanned text
+        setTargetUserId(qrText); // Update target user ID with scanned text
         handleGetUserCoins(qrText);
         setShowScanner(false); // Close the scanner popup
         return true; // Close popup automatically
@@ -549,7 +569,7 @@ const App = () => {
                 </>
               )}
               {roleType === "Teacher" && (
-                <div className="p-2 bg-gray-100 border-1 border-gray-200 rounded-lg">
+                <div className="p-2 bg-gray-100 border-1 border-gray-200 rounded-lg max-w-md mx-auto">
                   <h1 className="text-xl font-semibold text-center m-3">
                     Update User Coins 🪙
                   </h1>
@@ -629,14 +649,35 @@ const App = () => {
                         >
                           Enter coins to add or subtract:
                         </label>
-                        <input
-                          id="coinInput"
-                          type="number"
-                          value={coinToSend}
-                          onChange={(e) => setCoinToSend(e.target.value)}
-                          placeholder="Enter coins"
-                          className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                        />
+                        <div className="flex items-center">
+                          <button
+                            onClick={() =>
+                              setCoinToSend((prev) =>
+                                prev.startsWith("-")
+                                  ? prev.slice(1)
+                                  : `-${prev}`
+                              )
+                            }
+                            className="px-2 py-1 bg-gray-300 rounded-lg mr-2"
+                          >
+                            +/-
+                          </button>
+                          <input
+                            id="coinInput"
+                            type="text"
+                            value={coinToSend}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (/^-?\d*$/.test(value)) {
+                                // Allow only numbers with optional "-" sign
+                                setCoinToSend(value);
+                              }
+                            }}
+                            placeholder="Enter coins"
+                            className="w-full max-w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          />
+                        </div>
+
                         <button
                           onClick={() =>
                             handleUpdateUserCoinsSubmit(targetUserId)

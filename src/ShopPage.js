@@ -59,6 +59,15 @@ const getUserCoins = async (id) => {
   }
 };
 
+const renderStatus = (status) => {
+  if (status === "Pending") {
+    return <span>Pending 🔴</span>;
+  } else if (status === "Completed") {
+    return <span>Completed 🟢</span>;
+  }
+  return status;
+};
+
 const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
   const [view, setView] = useState("cart"); // Track the current view
 
@@ -200,7 +209,7 @@ const OrdersModal = ({ orders, onClose }) => {
           sortedOrders.map((order, index) => (
             <div key={index} className="mb-6">
               <p className="text-lg font-semibold text-gray-800">Order Date: {new Date(order.date_ordered).toLocaleString()}</p>
-              <p className="text-sm text-gray-500">Status: {order.status}</p>
+              <p className="text-sm text-gray-500">Status: {renderStatus(order.status)}</p>
               <div className="mt-4 space-y-4">
                 {order.items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-sm">
