@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useToast } from "./Toast";
 import RewardsList from "./RewardsList";
-import ManageOrders from "./ManageOrders"
+import ManageOrders from "./ManageOrders";
+import ApproveUser from "./ApproveUser";
 import Modal from "./Modal"; // Import the Modal component
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
@@ -21,6 +22,9 @@ const AdminPage = ({ adminData }) => {
   const [activeTab, setActiveTab] = useState("rewards"); // State to track the active tab
 
   const [ordersWithUsers, setOrdersWithUsers] = useState([]);
+  const [lastVisibleDocId, setLastVisibleDocId] = useState(null); // Tracks the last document ID
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true); // Tracks if more pages are available
 
   useEffect(() => {
     // Fetch all rewards when the component mounts
@@ -76,13 +80,19 @@ const AdminPage = ({ adminData }) => {
 
   const getAllRewards = async () => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
-      } = await axios.post("/api/get-all-rewards", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      } = await axios.post(
+        "/api/get-all-rewards", // URL of the API
+        {}, // Request body, can be replaced with any required data (empty if no data is needed)
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (status) {
         console.log("dataObj " + JSON.stringify(dataObj));
         return dataObj;
@@ -90,12 +100,13 @@ const AdminPage = ({ adminData }) => {
         return null;
       }
     } catch (error) {
-      console.error("Error submitting data:", error);
+      console.error("Error fetching rewards:", error);
     }
   };
 
   const uploadReward = async (payload) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -104,6 +115,7 @@ const AdminPage = ({ adminData }) => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -119,6 +131,7 @@ const AdminPage = ({ adminData }) => {
 
   const updateReward = async (payload) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -127,6 +140,7 @@ const AdminPage = ({ adminData }) => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -142,6 +156,7 @@ const AdminPage = ({ adminData }) => {
 
   const deleteReward = async (id) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -150,6 +165,7 @@ const AdminPage = ({ adminData }) => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -191,36 +207,78 @@ const AdminPage = ({ adminData }) => {
   };
 
   // Fetch orders with user details
-  const fetchOrdersWithUsers = async () => {
+  // const fetchOrdersWithUsers = async () => {
+  //   try {
+  //     const data = await getAllOrdersWithUsers(); // Call the API function
+  //     if (data) {
+  //       setOrdersWithUsers(data);
+  //     } else {
+  //       console.error("No orders with users found");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching orders with users:", error);
+  //   }
+  // };
+
+  // const getAllOrdersWithUsers = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const {
+  //       data: { status = false, dataObj = {} },
+  //     } = await axios.get("/api/get-all-orders-with-users", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     });
+  //     return status ? dataObj : null;
+  //   } catch (error) {
+  //     console.error("Error submitting data:", error);
+  //   }
+  // };
+
+  const fetchOrdersWithUsers = async (isNextPage = false) => {
+    if (loading) return; // Prevent multiple calls
+    setLoading(true);
+  
     try {
-      const data = await getAllOrdersWithUsers(); // Call the API function
-      if (data) {
-        setOrdersWithUsers(data);
+      const token = localStorage.getItem("token");
+      const params = {
+        limit: 5,
+        startAfterDocId: isNextPage ? lastVisibleDocId : null, // Pass last doc ID for pagination
+      };
+  
+      const { data: { status, dataObj } } = await axios.get("/api/get-all-orders-with-users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params,
+      });
+  
+      if (status) {
+        const { orders, lastVisible } = dataObj;
+        setOrdersWithUsers((prev) => (isNextPage ? [...prev, ...orders] : orders)); // Append or replace
+        setLastVisibleDocId(lastVisible);
+        setHasMore(Boolean(lastVisible)); // Update hasMore based on availability
       } else {
         console.error("No orders with users found");
       }
     } catch (error) {
       console.error("Error fetching orders with users:", error);
-    }
-  };
-
-  const getAllOrdersWithUsers = async () => {
-    try {
-      const { data: { status = false, dataObj = {} } } = await axios.get("/api/get-all-orders-with-users");
-      return status ? dataObj : null;
-    } catch (error) {
-      console.error("Error submitting data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const updateOrder = async (orderId, adminData) => {
     try {
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         "/api/update-order",
         { orderId, adminData },
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -229,7 +287,8 @@ const AdminPage = ({ adminData }) => {
       console.error("Error submitting data:", error);
       return {
         status: false,
-        message: error.response?.data?.message || "An unexpected error occurred.",
+        message:
+          error.response?.data?.message || "An unexpected error occurred.",
       };
     }
   };
@@ -237,9 +296,12 @@ const AdminPage = ({ adminData }) => {
   const handleUpdateOrder = async (orderId, adminData) => {
     try {
       const dataResponse = await updateOrder(orderId, adminData);
-  
-      console.log("dataResponse handleUpdateOrder:", JSON.stringify(dataResponse));
-  
+
+      console.log(
+        "dataResponse handleUpdateOrder:",
+        JSON.stringify(dataResponse)
+      );
+
       if (dataResponse?.status) {
         // Update the local state for the selected order
         setOrdersWithUsers((prevOrders) =>
@@ -259,7 +321,10 @@ const AdminPage = ({ adminData }) => {
               : orderWithUser
           )
         );
-        toast("success", dataResponse.message || "Order successfully confirmed!");
+        toast(
+          "success",
+          dataResponse.message || "Order successfully confirmed!"
+        );
       } else {
         // Handle error cases with detailed messages
         const errorMessage =
@@ -275,6 +340,68 @@ const AdminPage = ({ adminData }) => {
     }
   };
 
+  const cancelOrder = async (orderId, totalPrice) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "/api/cancel-order",
+        { orderId, totalPrice },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error canceling order:", error);
+      return {
+        status: false,
+        message:
+          error.response?.data?.message || "An unexpected error occurred.",
+      };
+    }
+  };
+
+  const handleCancelOrder = async (orderId, totalPrice) => {
+    try {
+      const dataResponse = await cancelOrder(orderId, totalPrice);
+  
+      if (dataResponse?.status) {
+        // Update local state to reflect the cancellation
+        setOrdersWithUsers((prevOrders) =>
+          prevOrders.map((orderWithUser) =>
+            orderWithUser.order.id === orderId
+              ? {
+                  ...orderWithUser,
+                  order: {
+                    ...orderWithUser.order,
+                    status: "Canceled",
+                    date_completed: {
+                      date: null,
+                      completed_by: null,
+                    },
+                  },
+                }
+              : orderWithUser
+          )
+        );
+        toast("success", dataResponse.message || "Order successfully canceled!");
+      } else {
+        const errorMessage =
+          dataResponse?.message || "Something went wrong canceling the order!";
+        toast("error", errorMessage);
+      }
+    } catch (error) {
+      console.error("Error canceling order:", error);
+      toast(
+        "error",
+        error.response?.data?.message || "An unexpected error occurred."
+      );
+    }
+  };  
+
   return (
     <div>
       <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
@@ -282,16 +409,34 @@ const AdminPage = ({ adminData }) => {
       {/* Tabs */}
       <div className="flex justify-center space-x-4 mb-4">
         <button
-          className={`px-4 py-2 rounded-lg ${activeTab === "rewards" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"}`}
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === "rewards"
+              ? "bg-gray-500 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
           onClick={() => setActiveTab("rewards")}
         >
           Manage Rewards
         </button>
         <button
-          className={`px-4 py-2 rounded-lg ${activeTab === "orders" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-700"}`}
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === "orders"
+              ? "bg-gray-500 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
           onClick={() => setActiveTab("orders")}
         >
           Manage Orders
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg ${
+            activeTab === "approve"
+              ? "bg-gray-500 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
+          onClick={() => setActiveTab("approve")}
+        >
+          Approve Registration
         </button>
       </div>
 
@@ -312,21 +457,39 @@ const AdminPage = ({ adminData }) => {
             adminData={adminData}
             data={ordersWithUsers}
             handleUpdateOrder={handleUpdateOrder}
+            handleCancelOrder={handleCancelOrder}
           />
+          {hasMore && !loading && (
+            <button
+              className="w-full bg-purple-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-purple-600 transition duration-200"
+              onClick={() => fetchOrdersWithUsers(true)}
+            >
+              Load More
+            </button>
+          )}
+          {loading && <p>Loading...</p>}
+        </div>
+      )}
+
+      {activeTab === "approve" && (
+        <div className="space-y-4">
+          <ApproveUser />
         </div>
       )}
 
       {/* Floating Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-4 right-4 bg-green-500 text-white w-16 h-16 flex items-center justify-center rounded-full shadow-2xl hover:bg-green-600 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-green-300 transform transition-all duration-300 ease-in-out"
+        className="fixed bottom-4 right-4 bg-blue-500 text-white w-16 h-16 flex items-center justify-center rounded-full shadow-2xl hover:bg-blue-600 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 transform transition-all duration-300 ease-in-out"
       >
         <span className="text-3xl font-bold">+</span>
       </button>
 
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Add New Reward</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+          Add New Reward
+        </h2>
         <div className="space-y-6">
           <input
             type="text"

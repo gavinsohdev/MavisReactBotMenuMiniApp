@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 
-const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
+const ManageOrders = ({
+  adminData,
+  handleUpdateOrder,
+  handleCancelOrder,
+  data,
+}) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortConfig, setSortConfig] = useState({
     key: "date_ordered", // Default sorting by date ordered
@@ -72,6 +77,8 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
       return <span>Pending 🔴</span>;
     } else if (status === "Completed") {
       return <span>Completed 🟢</span>;
+    } else if (status === "Canceled") {
+      return <span>Canceled ⚪</span>;
     }
     return status;
   };
@@ -252,17 +259,37 @@ const ManageOrders = ({ adminData, handleUpdateOrder, data }) => {
                 Total Price: {selectedOrder.order.total_price} 🪙
               </h3>
 
-              {/* Conditionally Render Confirm Button */}
+              {/* Conditionally Render Confirm and Cancel Buttons */}
               {selectedOrder.order.status === "Pending" && (
-                <button
-                  onClick={async () => {
-                    await handleUpdateOrder(selectedOrder.order.id, adminData);
-                    closeOrderModal(); // Close the modal after updating the order
-                  }}
-                  className="mt-4 bg-green-500 hover:bg-green-600 text-white py-3 rounded-md w-full text-center font-semibold"
-                >
-                  Confirm
-                </button>
+                <>
+                  {/* Confirm Button */}
+                  <button
+                    onClick={async () => {
+                      await handleUpdateOrder(
+                        selectedOrder.order.id,
+                        adminData
+                      );
+                      closeOrderModal(); // Close the modal after updating the order
+                    }}
+                    className="mt-4 bg-green-500 hover:bg-green-600 text-white py-3 rounded-md w-full text-center font-semibold"
+                  >
+                    Confirm
+                  </button>
+
+                  {/* Cancel Button */}
+                  <button
+                    onClick={async () => {
+                      await handleCancelOrder(
+                        selectedOrder.order.id,
+                        selectedOrder.order.total_price
+                      ); // Call handleCancelOrder with the order ID
+                      closeOrderModal(); // Close the modal after canceling the order
+                    }}
+                    className="mt-4 bg-red-500 hover:bg-red-600 text-white py-3 rounded-md w-full text-center font-semibold"
+                  >
+                    Cancel
+                  </button>
+                </>
               )}
 
               {/* Completed Order Info */}

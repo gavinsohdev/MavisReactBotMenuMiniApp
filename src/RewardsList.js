@@ -16,11 +16,18 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
   };
 
   // Pagination logic
-  const totalPages = Math.ceil(rewards.length / itemsPerPage);
-  const currentRewards = rewards.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages =
+    rewards && rewards.length > 0
+      ? Math.ceil(rewards.length / itemsPerPage)
+      : 1;
+
+  const currentRewards =
+    rewards && rewards.length > 0
+      ? rewards.slice(
+          (currentPage - 1) * itemsPerPage,
+          currentPage * itemsPerPage
+        )
+      : [];
 
   const handleNextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
@@ -33,158 +40,192 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
   return (
     <div>
       <div className="grid grid-cols-1 gap-6">
-        {currentRewards.map((reward) => (
-          <div
-            key={reward.id}
-            className="p-4 bg-white shadow-lg rounded-lg border"
-          >
-            <img
-              src={reward.photo_url}
-              alt={reward.id}
-              className="w-full h-40 object-cover rounded-md mb-4"
-            />
-            {editingId === reward.id ? (
-              <div className="space-y-4 p-6 bg-white rounded-lg shadow-md w-full max-w-md mx-auto">
-                <div>
-                  <input
-                    type="text"
-                    name="name"
-                    value={
-                      editableFields.name !== undefined
-                        ? editableFields.name
-                        : reward.name
-                    }
-                    onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
-                    placeholder="Name"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    name="photo_url"
-                    value={
-                      editableFields.photo_url !== undefined
-                        ? editableFields.photo_url
-                        : reward.photo_url
-                    }
-                    onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
-                    placeholder="Photo URL"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    name="price"
-                    value={
-                      editableFields.price !== undefined
-                        ? editableFields.price
-                        : reward.price
-                    }
-                    onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
-                    placeholder="Price"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    name="quantity"
-                    value={
-                      editableFields.quantity !== undefined
-                        ? editableFields.quantity
-                        : reward.quantity
-                    }
-                    onChange={handleFieldChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
-                    placeholder="Quantity"
-                  />
-                </div>
-
-                <div className="flex justify-between gap-4">
-                  <button
-                    onClick={() => {
-                      handleUpdateReward({
-                        ...reward,
-                        ...editableFields,
-                      });
-                      setEditingId(null);
-                      setEditableFields({});
-                    }}
-                    className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    onClick={() => {
-                      setEditingId(null);
-                      setEditableFields({});
-                    }}
-                    className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md space-y-4">
-                <p className="text-lg font-semibold text-center text-gray-800">
-                  {reward.name}
-                </p>
-                <p className="text-sm text-center text-gray-600">
-                  Price:{" "}
-                  <span className="font-bold text-gray-800">
-                    {reward.price} 🪙
-                  </span>
-                </p>
-                <p className="text-sm text-center text-gray-600">
-                  Quantity:{" "}
-                  <span className="font-bold text-gray-800">
-                    {reward.quantity}
-                  </span>
-                </p>
-                <p className="text-sm text-center text-gray-600">
-                  Date Added:{" "}
-                  <span className="font-semibold text-gray-800">
-                    {formatISODate(reward.date_added)}
-                  </span>
-                </p>
-
-                <div className="flex space-x-4">
-                  <button
-                    onClick={() => {
-                      setEditingId(reward.id);
-                      setEditableFields({
-                        name: reward.name,
-                        photo_url: reward.photo_url,
-                        price: reward.price,
-                        quantity: reward.quantity,
-                      });
-                    }}
-                    className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                  >
-                    Edit Reward
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Confirmation popup before proceeding with delete
-                      const confirmDelete = window.confirm(
-                        "Are you sure you want to delete this reward?"
-                      );
-                      if (confirmDelete) {
-                        handleDeleteReward(reward.id); // Proceed with deletion if confirmed
+        {currentRewards.length > 0 ? (
+          currentRewards.map((reward) => (
+            <div
+              key={reward.id}
+              className="p-4 bg-white shadow-lg rounded-lg border"
+            >
+              <img
+                src={reward.photo_url}
+                alt={reward.id}
+                className="w-full h-40 object-cover rounded-md mb-4"
+              />
+              {editingId === reward.id ? (
+                <div className="space-y-4 p-6 bg-white rounded-lg shadow-md w-full max-w-md mx-auto">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      value={
+                        editableFields.name !== undefined
+                          ? editableFields.name
+                          : reward.name
                       }
-                    }}
-                    className="w-full bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
-                  >
-                    Delete Reward
-                  </button>
+                      onChange={handleFieldChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                      placeholder="Name"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="photo_url"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Photo URL
+                    </label>
+                    <input
+                      type="text"
+                      name="photo_url"
+                      id="photo_url"
+                      value={
+                        editableFields.photo_url !== undefined
+                          ? editableFields.photo_url
+                          : reward.photo_url
+                      }
+                      onChange={handleFieldChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                      placeholder="Photo URL"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="price"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Price
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      id="price"
+                      value={
+                        editableFields.price !== undefined
+                          ? editableFields.price
+                          : reward.price
+                      }
+                      onChange={handleFieldChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                      placeholder="Price"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="quantity"
+                      className="text-sm font-semibold text-gray-700"
+                    >
+                      Quantity
+                    </label>
+                    <input
+                      type="number"
+                      name="quantity"
+                      id="quantity"
+                      value={
+                        editableFields.quantity !== undefined
+                          ? editableFields.quantity
+                          : reward.quantity
+                      }
+                      onChange={handleFieldChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                      placeholder="Quantity"
+                    />
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <button
+                      onClick={() => {
+                        handleUpdateReward({
+                          ...reward,
+                          ...editableFields,
+                        });
+                        setEditingId(null);
+                        setEditableFields({});
+                      }}
+                      className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingId(null);
+                        setEditableFields({});
+                      }}
+                      className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ))}
+              ) : (
+                <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md space-y-4">
+                  <p className="text-lg font-semibold text-center text-gray-800">
+                    {reward.name}
+                  </p>
+                  <p className="text-sm text-center text-gray-600">
+                    Price:{" "}
+                    <span className="font-bold text-gray-800">
+                      {reward.price} 🪙
+                    </span>
+                  </p>
+                  <p className="text-sm text-center text-gray-600">
+                    Quantity:{" "}
+                    <span className="font-bold text-gray-800">
+                      {reward.quantity}
+                    </span>
+                  </p>
+                  <p className="text-sm text-center text-gray-600">
+                    Date Added:{" "}
+                    <span className="font-semibold text-gray-800">
+                      {formatISODate(reward.date_added)}
+                    </span>
+                  </p>
+
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => {
+                        setEditingId(reward.id);
+                        setEditableFields({
+                          name: reward.name,
+                          photo_url: reward.photo_url,
+                          price: reward.price,
+                          quantity: reward.quantity,
+                        });
+                      }}
+                      className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    >
+                      Edit Reward
+                    </button>
+                    <button
+                      onClick={() => {
+                        // Confirmation popup before proceeding with delete
+                        const confirmDelete = window.confirm(
+                          "Are you sure you want to delete this reward?"
+                        );
+                        if (confirmDelete) {
+                          handleDeleteReward(reward.id); // Proceed with deletion if confirmed
+                        }
+                      }}
+                      className="w-full bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                    >
+                      Delete Reward
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="text-center text-gray-600">No rewards available.</p>
+        )}
       </div>
 
       {/* Pagination Controls */}

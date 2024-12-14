@@ -16,13 +16,18 @@ const LoadingOverlay = () => (
 // Fetch rewards data from API
 const getAllRewards = async () => {
   try {
+    const token = localStorage.getItem("token");
     const {
       data: { status = false, dataObj = [] },
-    } = await axios.post("/api/get-all-rewards", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    } = await axios.post("/api/get-all-rewards", // POST data (body of the request)
+      {}, // You can pass the empty object or any data you need to send in the body here
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (status) {
       return dataObj; // Returning the rewards data array
     } else {
@@ -37,6 +42,7 @@ const getAllRewards = async () => {
 // Fetch user's coin balance
 const getUserCoins = async (id) => {
   try {
+    const token = localStorage.getItem("token");
     const {
       data: { coin: coin },
     } = await axios.post(
@@ -45,6 +51,7 @@ const getUserCoins = async (id) => {
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -64,6 +71,8 @@ const renderStatus = (status) => {
     return <span>Pending 🔴</span>;
   } else if (status === "Completed") {
     return <span>Completed 🟢</span>;
+  } else if (status === "Canceled") {
+    return <span>Canceled ⚪</span>;
   }
   return status;
 };
@@ -107,13 +116,16 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                         className="w-16 h-16 rounded-lg border border-gray-300"
                       />
                       <div>
-                        <p className="font-semibold text-gray-800">{item.name}</p>
+                        <p className="font-semibold text-gray-800">
+                          {item.name}
+                        </p>
                         <p className="text-sm text-gray-500">
                           Quantity:{" "}
                           <span className="font-medium">{item.quantity}</span>
                         </p>
                         <p className="text-sm text-gray-500">
-                          Price: <span className="font-medium">{item.price} 🪙</span>
+                          Price:{" "}
+                          <span className="font-medium">{item.price} 🪙</span>
                         </p>
                       </div>
                     </div>
@@ -126,7 +138,9 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-center">Your cart is empty 🛒</p>
+                <p className="text-gray-500 text-center">
+                  Your cart is empty 🛒
+                </p>
               )}
             </div>
 
@@ -135,7 +149,9 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
               <div className="mt-6 flex justify-between items-center border-t pt-4">
                 <p className="text-lg font-bold text-gray-800">
                   Total:{" "}
-                  <span className="text-green-600">{cartData.total_price} 🪙</span>
+                  <span className="text-green-600">
+                    {cartData.total_price} 🪙
+                  </span>
                 </p>
                 <button
                   onClick={() => setView("orderSummary")}
@@ -167,7 +183,9 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
             <div className="mt-6 border-t pt-4 space-y-4">
               <p className="text-lg font-bold text-gray-800">
                 Total:{" "}
-                <span className="text-green-600">{cartData.total_price} 🪙</span>
+                <span className="text-green-600">
+                  {cartData.total_price} 🪙
+                </span>
               </p>
               <button
                 onClick={() => onCheckout(userId)}
@@ -191,14 +209,19 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
 
 const OrdersModal = ({ orders, onClose }) => {
   // Sort orders by date_ordered, newest first
-  const sortedOrders = [...orders].sort((a, b) => new Date(b.date_ordered) - new Date(a.date_ordered));
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered)
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-[90%] max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
           <h2 className="text-xl font-bold text-gray-800">Your Orders 📃</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-red-500">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-red-500"
+          >
             ✖️
           </button>
         </div>
@@ -208,22 +231,41 @@ const OrdersModal = ({ orders, onClose }) => {
         ) : (
           sortedOrders.map((order, index) => (
             <div key={index} className="mb-6">
-              <p className="text-lg font-semibold text-gray-800">Order Date: {new Date(order.date_ordered).toLocaleString()}</p>
-              <p className="text-sm text-gray-500">Status: {renderStatus(order.status)}</p>
+              <p className="text-lg font-semibold text-gray-800">
+                Order Date: {new Date(order.date_ordered).toLocaleString()}
+              </p>
+              <p className="text-sm text-gray-500">
+                Status: {renderStatus(order.status)}
+              </p>
               <div className="mt-4 space-y-4">
                 {order.items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-sm">
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-sm"
+                  >
                     <div className="flex items-center space-x-4">
-                      <img src={item.photo_url} alt={item.name} className="w-16 h-16 rounded-lg border border-gray-300" />
+                      <img
+                        src={item.photo_url}
+                        alt={item.name}
+                        className="w-16 h-16 rounded-lg border border-gray-300"
+                      />
                       <div>
-                        <p className="font-semibold text-gray-800">{item.name}</p>
-                        <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
-                        <p className="text-sm text-gray-500">Price: {item.price} 🪙</p>
+                        <p className="font-semibold text-gray-800">
+                          {item.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Quantity: {item.quantity}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Price: {item.price} 🪙
+                        </p>
                       </div>
                     </div>
                   </div>
                 ))}
-                <p className="text-sm text-gray-500 border-t border-gray-200">Total Coins: {order.total_price} 🪙</p>
+                <p className="text-sm text-gray-500 border-t border-gray-200">
+                  Total Coins: {order.total_price} 🪙
+                </p>
               </div>
             </div>
           ))
@@ -315,6 +357,7 @@ const Shop = () => {
 
   const addToCart = async (id, reward) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -323,6 +366,7 @@ const Shop = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -348,6 +392,7 @@ const Shop = () => {
 
   const getAllCart = async (id) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -356,6 +401,7 @@ const Shop = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -383,6 +429,7 @@ const Shop = () => {
 
   const onDeleteItem = async (id, itemId) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -391,6 +438,7 @@ const Shop = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -408,22 +456,28 @@ const Shop = () => {
     try {
       const response = await placeOrder(id);
       console.log("handlePlaceOrder response:", response);
-  
-      if (response === 'INSUFFICIENT_COINS') {
+
+      if (response === "INSUFFICIENT_COINS") {
         // Case for insufficient coins
         toast("error", "Insufficient Coins! Please add more coins to proceed.");
       } else if (response === null) {
         // This case is for other failure scenarios (e.g., unexpected errors)
         toast("error", "Order placement failed. Please try again later.");
-      } else if (typeof response === 'number') {
+      } else if (typeof response === "number") {
         // Success case: the response is the new coin balance
         setCoins(response);
         setShowCart(false);
-        toast("success", `Order placed successfully! Your new balance is ${response} coins.`);
+        toast(
+          "success",
+          `Order placed successfully! Your new balance is ${response} coins.`
+        );
       } else {
         // Handle unexpected response from placeOrder (just in case)
         setShowCart(false);
-        toast("error", "An unexpected error occurred while placing the order. Please try again.");
+        toast(
+          "error",
+          "An unexpected error occurred while placing the order. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error in handlePlaceOrder:", error);
@@ -433,6 +487,7 @@ const Shop = () => {
 
   const placeOrder = async (id) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, message = "", newCoinBalance },
       } = await axios.post(
@@ -441,16 +496,17 @@ const Shop = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-  
+
       if (status && message === "ORDER SUCCESSFUL") {
         // Return the new coin balance if the order is successful
         return newCoinBalance;
       } else if (!status && message === "INSUFFICIENT_COINS") {
         // Return 'INSUFFICIENT_COINS' specifically when coins are insufficient
-        return 'INSUFFICIENT_COINS';
+        return "INSUFFICIENT_COINS";
       } else {
         // Return null for other failure scenarios
         return null;
@@ -474,6 +530,7 @@ const Shop = () => {
 
   const getAllOrders = async (id) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -482,6 +539,7 @@ const Shop = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );

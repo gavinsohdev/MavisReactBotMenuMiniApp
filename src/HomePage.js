@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import AdminPage from "./AdminPage";
 import { useToast } from "./Toast";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link, useNavigate } from "react-router-dom"; // Import Link for navigation
 import {
   useShowPopup,
   useHapticFeedback,
@@ -13,6 +13,7 @@ import { QRCodeSVG } from "qrcode.react";
 import axios from "axios";
 
 const App = () => {
+  const navigate = useNavigate();
   const toast = useToast();
   const showPopup = useShowPopup();
   const [impactOccurred] = useHapticFeedback();
@@ -83,6 +84,11 @@ const App = () => {
           const dataChanged = hasDataChanged(ExtractedInitDataUnsafe, response);
           dataChanged && updateUser({ data: dataChanged, id });
           setRoleType(response.role);
+
+          if (response.registration_status !== "Approved" && response.role === "Teacher") {
+            navigate(`/pending/${id}`); // Redirect to Pending page if Teacher and not approved
+          }
+
           if (response.role === "Student") {
             const coin = await getUserCoins(id);
             if (coin !== null) {
@@ -108,10 +114,12 @@ const App = () => {
     language_code: InitDataUnsafe?.user?.language_code,
     photo_url: InitDataUnsafe?.user?.photo_url,
     role,
+    registration_status: role === "Teacher" ? "Pending" : "Approved",
   });
 
   const getUser = async (id) => {
     try {
+      const token = localStorage.getItem("token"); // Retrieve token from storage
       const {
         data: { status = false, dataObj = {} },
       } = await axios.post(
@@ -120,10 +128,39 @@ const App = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       if (status) {
+        return dataObj;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error submitting data:", error);
+    }
+  };
+
+  const initializeApp = async (id) => {
+    try {
+      const {
+        data: { status = false, dataObj = {}, token },
+      } = await axios.post(
+        "/api/initialize-app",
+        { id },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (status) {
+        if (token) {
+          localStorage.setItem("token", token);
+        } else {
+          console.error("Error setting token:");
+        }
         return dataObj;
       } else {
         return null;
@@ -143,6 +180,8 @@ const App = () => {
     // Remove the keys we want to ignore
     delete newClone.role;
     delete oldClone.role;
+    delete newClone.registration_status;
+    delete oldClone.registration_status;
 
     Object.keys(newClone).forEach((key) => {
       if (newClone[key] !== oldClone[key]) {
@@ -156,7 +195,7 @@ const App = () => {
 
   const isUserRegistered = async (id) => {
     try {
-      const response = await getUser(id);
+      const response = await initializeApp(id);
       if (response) {
         if (JSON.stringify(response) !== JSON.stringify(userDisplayData)) {
           setUserDisplayData(response);
@@ -182,9 +221,13 @@ const App = () => {
           },
         });
         if (response?.status) {
+          localStorage.setItem("token", response?.token);
+          if (role === "Teacher") {
+            navigate(`/pending/${profileData?.id}`); // Redirect to Pending page if Teacher and not approved
+          }
           setUserDisplayData(getPayload());
           setRoleType(role);
-          setIsRegistered(true);
+          setIsRegistered(true);       
         } else {
           setIsRegistered(false);
           console.error("registerUser failed");
@@ -198,10 +241,12 @@ const App = () => {
   };
 
   const updateUser = async (payload) => {
+    const token = localStorage.getItem("token"); // Retrieve token from storage
     try {
       const response = await axios.post("/api/update-user", payload, {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
       if (response?.status) {
@@ -216,6 +261,7 @@ const App = () => {
 
   const getUserCoins = async (id) => {
     try {
+      const token = localStorage.getItem("token"); // Retrieve token from storage
       const {
         data: { coin: coin },
       } = await axios.post(
@@ -224,6 +270,7 @@ const App = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -290,6 +337,7 @@ const App = () => {
 
   const handleUpdateUserCoins = async (id, coinAmount) => {
     try {
+      const token = localStorage.getItem("token");
       const {
         data: { status = false, coin },
       } = await axios.post(
@@ -298,6 +346,7 @@ const App = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         }
       );
