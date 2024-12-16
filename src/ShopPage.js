@@ -19,7 +19,8 @@ const getAllRewards = async () => {
     const token = localStorage.getItem("token");
     const {
       data: { status = false, dataObj = [] },
-    } = await axios.post("/api/get-all-rewards", // POST data (body of the request)
+    } = await axios.post(
+      "/api/get-all-rewards", // POST data (body of the request)
       {}, // You can pass the empty object or any data you need to send in the body here
       {
         headers: {
@@ -109,6 +110,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                     key={item.id}
                     className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-sm"
                   >
+                    {/* Item Details */}
                     <div className="flex items-center space-x-4">
                       <img
                         src={item.photo_url}
@@ -120,20 +122,38 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                           {item.name}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Quantity:{" "}
-                          <span className="font-medium">{item.quantity}</span>
-                        </p>
-                        <p className="text-sm text-gray-500">
                           Price:{" "}
                           <span className="font-medium">{item.price} 🪙</span>
                         </p>
+                        <p className="text-sm text-gray-500">
+                          Quantity:{" "}
+                          <span className="font-medium">{item.quantity}</span>
+                        </p>
+                        {/* Branches Display */}
+                        {item.selectedBranches &&
+                          item.selectedBranches.length > 0 && (
+                            <div>
+                              <span className="text-gray-600 text-sm">
+                                {item.selectedBranches.length > 1
+                                  ? "Branches: "
+                                  : "Branch: "}
+                              </span>
+                              <span className="text-gray-800 text-xs font-medium">
+                                {item.selectedBranches
+                                  .map((branch) => branch.name)
+                                  .join(", ")}
+                              </span>
+                            </div>
+                          )}
                       </div>
                     </div>
+
+                    {/* Remove Button */}
                     <button
                       onClick={() => onDeleteItem(userId, item.id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+                      className="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-all"
                     >
-                      Delete
+                      Remove
                     </button>
                   </div>
                 ))
@@ -208,8 +228,11 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
 };
 
 const OrdersModal = ({ orders, onClose }) => {
+  // Ensure orders is an array, default to an empty array if not
+  const validOrders = Array.isArray(orders) ? orders : [];
+
   // Sort orders by date_ordered, newest first
-  const sortedOrders = [...orders].sort(
+  const sortedOrders = [...validOrders].sort(
     (a, b) => new Date(b.date_ordered) - new Date(a.date_ordered)
   );
 
@@ -460,6 +483,11 @@ const Shop = () => {
       if (response === "INSUFFICIENT_COINS") {
         // Case for insufficient coins
         toast("error", "Insufficient Coins! Please add more coins to proceed.");
+      } else if (response === "REWARD_NOT_AVAILABLE_IN_ONE_OR_MORE_BRANCHES") {
+        toast(
+          "error",
+          "One or more rewards not available at the branch(es) that you go to!"
+        );
       } else if (response === null) {
         // This case is for other failure scenarios (e.g., unexpected errors)
         toast("error", "Order placement failed. Please try again later.");
@@ -507,6 +535,11 @@ const Shop = () => {
       } else if (!status && message === "INSUFFICIENT_COINS") {
         // Return 'INSUFFICIENT_COINS' specifically when coins are insufficient
         return "INSUFFICIENT_COINS";
+      } else if (
+        !status &&
+        message === "REWARD_NOT_AVAILABLE_IN_ONE_OR_MORE_BRANCHES"
+      ) {
+        return "REWARD_NOT_AVAILABLE_IN_ONE_OR_MORE_BRANCHES";
       } else {
         // Return null for other failure scenarios
         return null;
@@ -565,7 +598,7 @@ const Shop = () => {
     <>
       {/* Loading Overlay */}
       {loading && <LoadingOverlay />}
-
+  
       {/* Navbar */}
       <div className="w-full max-w-4xl flex justify-between items-center py-4 px-6 bg-[#333333] shadow-md">
         <nav className="flex space-x-8">
@@ -586,7 +619,7 @@ const Shop = () => {
           <span>Coins: {coins} 🪙</span>
         </div>
       </div>
-
+  
       {/* Cart Modal */}
       {showCart && (
         <CartModal
@@ -597,12 +630,12 @@ const Shop = () => {
           onCheckout={handlePlaceOrder}
         />
       )}
-
+  
       {/* Orders Modal */}
       {showOrders && (
         <OrdersModal orders={orders} onClose={() => setShowOrders(false)} />
       )}
-
+  
       {/* Main Content Area */}
       <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-4 relative">
         {/* Back Button */}
@@ -612,45 +645,80 @@ const Shop = () => {
         >
           🔙
         </Link>
-
+  
         {/* Centered Title */}
         <h1 className="text-3xl font-bold text-gray-800 tracking-tight text-center mb-8">
           Rewards ⭐
         </h1>
-
+  
         {/* Rewards List */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {paginatedRewards.map((reward) => (
-            <div
-              key={reward.id}
-              className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <img
-                src={reward.photo_url}
-                alt={`Reward ${reward.id}`}
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-              <h2 className="text-xl text-center font-semibold text-gray-800 mb-2">
-                {reward.name}
-              </h2>
-              <p className="text-gray-600 text-center text-sm mb-2">
-                Price: {reward.price} 🪙
-              </p>
-              <p className="text-gray-600 text-center text-sm mb-4">
-                Quantity: {reward.quantity}
-              </p>
-              <button
-                onClick={async () => handleAddToCart(id, reward)}
-                className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all duration-300"
+        {rewards.length === 0 ? (
+          <div className="text-center text-gray-500">
+            <p>No rewards available at the moment. Please check back later! 🙁</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {paginatedRewards.map((reward) => (
+              <div
+                key={reward.id}
+                className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
-                Add to Cart
-              </button>
-            </div>
-          ))}
-        </div>
-
+                <img
+                  src={reward.photo_url}
+                  alt={`Reward ${reward.id}`}
+                  className="w-full h-48 object-cover rounded-lg mb-4"
+                />
+                <h2 className="text-xl text-center font-semibold text-gray-800 mb-2">
+                  {reward.name}
+                </h2>
+                <p className="text-gray-600 text-center text-sm mb-2">
+                  Price:{" "}
+                  <span className="font-semibold text-gray-800">
+                    {reward.price}
+                  </span>{" "}
+                  🪙
+                </p>
+                <p className="text-gray-600 text-center text-sm mb-2">
+                  Quantity:{" "}
+                  <span className="font-semibold text-gray-800">
+                    {reward.quantity}
+                  </span>
+                </p>
+  
+                {/* Conditionally render selectedBranches */}
+                {reward.selectedBranches && reward.selectedBranches.length > 0 && (
+                  <div className="text-center mb-4">
+                    <span className="text-gray-600 text-sm mb-2 block">
+                      {reward.selectedBranches.length > 1
+                        ? "Branches:"
+                        : "Branch:"}
+                    </span>
+                    <div className="flex flex-wrap justify-center space-x-2 mt-2">
+                      {reward.selectedBranches.map((branch) => (
+                        <span
+                          key={branch.id}
+                          className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
+                        >
+                          {branch.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+  
+                <button
+                  onClick={async () => handleAddToCart(id, reward)}
+                  className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all duration-300"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+  
         {/* Pagination Controls */}
-        {totalPages > 1 && (
+        {totalPages > 1 && rewards.length > 0 && (
           <div className="mt-8 flex justify-center items-center space-x-6">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -676,7 +744,7 @@ const Shop = () => {
         )}
       </div>
     </>
-  );
+  );  
 };
 
 export default Shop;

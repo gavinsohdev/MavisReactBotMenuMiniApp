@@ -9,6 +9,8 @@ import axios from "axios";
 
 const AdminPage = ({ adminData }) => {
   const toast = useToast();
+  const [branches, setBranches] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [rewards, setRewards] = useState([]);
   const [newReward, setNewReward] = useState({
     id: "",
@@ -17,6 +19,7 @@ const AdminPage = ({ adminData }) => {
     price: "",
     quantity: "",
     date_added: "",
+    selectedBranches: [],
   });
   const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const [activeTab, setActiveTab] = useState("rewards"); // State to track the active tab
@@ -28,11 +31,13 @@ const AdminPage = ({ adminData }) => {
 
   useEffect(() => {
     // Fetch all rewards when the component mounts
-    const fetchRewards = async () => {
+    const fetchData = async () => {
       const rewardsData = await getAllRewards();
       setRewards(rewardsData);
+      const branchesData = await getAllBranches();
+      setBranches(branchesData);
     };
-    fetchRewards();
+    fetchData();
     fetchOrdersWithUsers();
   }, []);
 
@@ -45,11 +50,65 @@ const AdminPage = ({ adminData }) => {
     }));
   };
 
+  const handleBranchSelection = (branch) => {
+    setNewReward((prev) => {
+      if (prev.selectedBranches.some((selected) => selected.id === branch.id)) {
+        return prev; // Do nothing if branch already selected
+      }
+      return {
+        ...prev,
+        selectedBranches: [...prev.selectedBranches, branch],
+      };
+    });
+    setShowDropdown(false); // Close dropdown after selection
+  };
+
+  const handleRemoveBranch = (branchId) => {
+    setNewReward((prev) => ({
+      ...prev,
+      selectedBranches: prev.selectedBranches.filter(
+        (branch) => branch.id !== branchId
+      ),
+    }));
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const {
+        data: { status = false, dataObj = {} },
+      } = await axios.post(
+        "/api/get-all-branches", // URL of the API
+        {}, // Request body (empty if no additional data is needed)
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (status) {
+        console.log("dataObj: " + JSON.stringify(dataObj));
+        return dataObj;
+      } else {
+        console.warn("Failed to fetch branches");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+      return [];
+    }
+  };
+
   // Handle adding a new reward
   const handleAddReward = async () => {
-    const { name, photo_url, price, quantity } = newReward;
+    const { name, photo_url, price, quantity, selectedBranches } = newReward;
 
-    if (!name || !photo_url || price <= 0 || quantity <= 0) {
+    if (
+      !name ||
+      !photo_url ||
+      price <= 0 ||
+      quantity <= 0 ||
+      selectedBranches.length === 0
+    ) {
       alert("Please fill all fields with valid values.");
       return;
     }
@@ -58,6 +117,11 @@ const AdminPage = ({ adminData }) => {
       ...newReward,
       id: uuidv4(),
       date_added: new Date().toISOString(),
+      // Send only the branch IDs in the payload
+      selectedBranches: selectedBranches.map((branch) => ({
+        id: branch.id,
+        name: branch.name,
+      })),
     };
 
     try {
@@ -69,6 +133,7 @@ const AdminPage = ({ adminData }) => {
         price: "",
         quantity: "",
         date_added: "",
+        selectedBranches: [],
       });
       const rewardsData = await getAllRewards();
       setRewards(rewardsData);
@@ -239,24 +304,28 @@ const AdminPage = ({ adminData }) => {
   const fetchOrdersWithUsers = async (isNextPage = false) => {
     if (loading) return; // Prevent multiple calls
     setLoading(true);
-  
+
     try {
       const token = localStorage.getItem("token");
       const params = {
         limit: 5,
         startAfterDocId: isNextPage ? lastVisibleDocId : null, // Pass last doc ID for pagination
       };
-  
-      const { data: { status, dataObj } } = await axios.get("/api/get-all-orders-with-users", {
+
+      const {
+        data: { status, dataObj },
+      } = await axios.get("/api/get-all-orders-with-users", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params,
       });
-  
+
       if (status) {
         const { orders, lastVisible } = dataObj;
-        setOrdersWithUsers((prev) => (isNextPage ? [...prev, ...orders] : orders)); // Append or replace
+        setOrdersWithUsers((prev) =>
+          isNextPage ? [...prev, ...orders] : orders
+        ); // Append or replace
         setLastVisibleDocId(lastVisible);
         setHasMore(Boolean(lastVisible)); // Update hasMore based on availability
       } else {
@@ -367,7 +436,7 @@ const AdminPage = ({ adminData }) => {
   const handleCancelOrder = async (orderId, totalPrice) => {
     try {
       const dataResponse = await cancelOrder(orderId, totalPrice);
-  
+
       if (dataResponse?.status) {
         // Update local state to reflect the cancellation
         setOrdersWithUsers((prevOrders) =>
@@ -387,7 +456,10 @@ const AdminPage = ({ adminData }) => {
               : orderWithUser
           )
         );
-        toast("success", dataResponse.message || "Order successfully canceled!");
+        toast(
+          "success",
+          dataResponse.message || "Order successfully canceled!"
+        );
       } else {
         const errorMessage =
           dataResponse?.message || "Something went wrong canceling the order!";
@@ -400,12 +472,11 @@ const AdminPage = ({ adminData }) => {
         error.response?.data?.message || "An unexpected error occurred."
       );
     }
-  };  
+  };
 
   return (
     <div>
       <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
-
       {/* Tabs */}
       <div className="flex justify-center space-x-4 mb-4">
         <button
@@ -439,18 +510,17 @@ const AdminPage = ({ adminData }) => {
           Approve Registration
         </button>
       </div>
-
       {/* Content for each Tab */}
       {activeTab === "rewards" && (
         <div className="space-y-4">
           <RewardsList
             rewards={rewards}
+            branches={branches}
             handleUpdateReward={handleUpdateReward}
             handleDeleteReward={handleDeleteReward}
           />
         </div>
       )}
-
       {activeTab === "orders" && (
         <div className="space-y-4">
           <ManageOrders
@@ -470,13 +540,11 @@ const AdminPage = ({ adminData }) => {
           {loading && <p>Loading...</p>}
         </div>
       )}
-
       {activeTab === "approve" && (
         <div className="space-y-4">
           <ApproveUser />
         </div>
       )}
-
       {/* Floating Button */}
       <button
         onClick={() => setIsModalOpen(true)}
@@ -484,7 +552,6 @@ const AdminPage = ({ adminData }) => {
       >
         <span className="text-3xl font-bold">+</span>
       </button>
-
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">
@@ -523,6 +590,69 @@ const AdminPage = ({ adminData }) => {
             placeholder="Quantity"
             className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
           />
+
+          {/* Branch Dropdown */}
+          <div className="relative">
+            <input
+              type="text"
+              value={newReward.selectedBranches
+                .map((branch) => branch.name)
+                .join(", ")}
+              placeholder="Select Branches"
+              readOnly
+              className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+            />
+            <button
+              onClick={() => setShowDropdown((prev) => !prev)}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-gray-300 rounded"
+            >
+              ↓
+            </button>
+            {showDropdown && (
+              <ul
+                className="absolute left-0 w-full bg-white border border-gray-300 rounded-lg max-h-48 overflow-y-auto z-10"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {branches.map((branch) => (
+                  <li
+                    key={branch.id}
+                    onClick={() => handleBranchSelection(branch)}
+                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between ${
+                      newReward.selectedBranches.some(
+                        (selected) => selected.id === branch.id
+                      )
+                        ? "bg-green-100"
+                        : ""
+                    }`}
+                  >
+                    {branch.name}
+                    {newReward.selectedBranches.some(
+                      (selected) => selected.id === branch.id
+                    ) && <span className="text-green-500">✔</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Display Selected Branches */}
+          <div className="space-y-2">
+            {newReward.selectedBranches.map((branch) => (
+              <div
+                key={branch.id}
+                className="flex items-center justify-between px-4 py-2 bg-gray-100 rounded-lg"
+              >
+                <span>{branch.name}</span>
+                <button
+                  onClick={() => handleRemoveBranch(branch.id)}
+                  className="text-red-500"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+
           <div className="flex space-x-4">
             <button
               onClick={handleAddReward}

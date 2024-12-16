@@ -22,6 +22,8 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({});
   const [userDisplayData, setUserDisplayData] = useState({});
+  const [branches, setBranches] = useState([]);
+  const [selectedBranches, setSelectedBranches] = useState([]);
   const [role, setRole] = useState("Student");
   const [roleType, setRoleType] = useState("Student");
   const [page, setPage] = useState(1);
@@ -85,7 +87,10 @@ const App = () => {
           dataChanged && updateUser({ data: dataChanged, id });
           setRoleType(response.role);
 
-          if (response.registration_status !== "Approved" && response.role === "Teacher") {
+          if (
+            response.registration_status !== "Approved" &&
+            response.role === "Teacher"
+          ) {
             navigate(`/pending/${id}`); // Redirect to Pending page if Teacher and not approved
           }
 
@@ -106,6 +111,15 @@ const App = () => {
     }
   }, [InitDataUnsafe, profileData]); // Add profileData to the dependency array to track changes
 
+  useEffect(() => {
+    // Fetch branches when the component mounts
+    const fetchData = async () => {
+      const branchesData = await getAllBranches();
+      setBranches(branchesData);
+    };
+    fetchData();
+  }, []);
+
   const getPayload = () => ({
     id: String(InitDataUnsafe?.user?.id),
     first_name: InitDataUnsafe?.user?.first_name,
@@ -115,6 +129,7 @@ const App = () => {
     photo_url: InitDataUnsafe?.user?.photo_url,
     role,
     registration_status: role === "Teacher" ? "Pending" : "Approved",
+    selectedBranches: selectedBranches,
   });
 
   const getUser = async (id) => {
@@ -213,9 +228,22 @@ const App = () => {
   };
 
   const registerUser = async () => {
+    if (!selectedBranches.length) {
+      toast("error", "Please select at least one branch!");
+      return;
+    }
+    const getPayloadData = getPayload(); // Call getPayload separately
+
+    const updatedPayload = {
+      ...getPayloadData, // Spread the original object
+      selectedBranches: selectedBranches.map((branch) => ({
+        id: branch.id,
+        name: branch.name,
+      })), // Modify only selectedBranches
+    };
     if (profileData?.username) {
       try {
-        const response = await axios.post("/api/register-user", getPayload(), {
+        const response = await axios.post("/api/register-user", updatedPayload, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -227,7 +255,7 @@ const App = () => {
           }
           setUserDisplayData(getPayload());
           setRoleType(role);
-          setIsRegistered(true);       
+          setIsRegistered(true);
         } else {
           setIsRegistered(false);
           console.error("registerUser failed");
@@ -331,7 +359,6 @@ const App = () => {
       }
     } catch (error) {
       console.error("Error fetching user coins:", error);
-      toast("error", "This is an error message!");
     }
   };
 
@@ -410,6 +437,44 @@ const App = () => {
       }
       return false; // Keep the popup open
     });
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const {
+        data: { status = false, dataObj = [] },
+      } = await axios.post(
+        "/api/get-all-branches", // URL of the API
+        {}, // Request body (empty if no additional data is needed)
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      if (status) {
+        console.log("Branches fetched:", dataObj);
+        return dataObj;
+      } else {
+        console.warn("Failed to fetch branches");
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+      return [];
+    }
+  };
+
+  const handleSelectBranch = (branch) => {
+    if (!selectedBranches.some((item) => item.id === branch.id)) {
+      setSelectedBranches((prev) => [...prev, branch]);
+    }
+  };
+
+  const handleRemoveBranch = (branchId) => {
+    setSelectedBranches((prev) =>
+      prev.filter((branch) => branch.id !== branchId)
+    );
   };
 
   const handleCloseScanner = () => {
@@ -581,6 +646,22 @@ const App = () => {
                     )}
                   </li>
                 ))}
+                {/* Conditionally render selectedBranches as badges */}
+                {userDisplayData?.selectedBranches?.length > 0 && (
+                  <li className="flex items-center space-x-6 border-b border-gray-200 pb-4 last:border-b-0">
+                    <span className="font-semibold text-gray-600 capitalize w-36">Branches:</span>
+                    <div className="flex flex-wrap justify-center space-x-2 mt-2">
+                      {userDisplayData.selectedBranches.map((branch) => (
+                        <span
+                          key={branch.id}
+                          className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
+                        >
+                          {branch.name}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                )}
               </ul>
               {roleType === "Student" && (
                 <>
@@ -773,7 +854,6 @@ const App = () => {
               <p className="text-lg font-semibold text-gray-700">
                 {profileData.first_name} {profileData.last_name}
               </p>
-              {/* <p className="mt-2 text-gray-500">Current Page: {page}</p> */}
             </div>
 
             <div className="mt-8 space-y-4">
@@ -792,49 +872,71 @@ const App = () => {
                 >
                   <option value="Student">Student 🧑‍🎓</option>
                   <option value="Teacher">Teacher 👩‍🏫</option>
-                  <option value="Admin">Admin 👨‍💼</option>
+                  {/* <option value="Admin">Admin 👨‍💼</option> */}
                 </select>
               </div>
-              {/* {renderPageContent()}
-
-              {page < 3 && (
-                <button
-                  onClick={handleNextPage}
-                  className="w-full bg-purple-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-purple-600 transition duration-200"
+              {/* Branch Selection */}
+              <div>
+                <label
+                  htmlFor="branch"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Next Page
-                </button>
-              )} */}
-
-              {/* <button
-                onClick={() =>
-                  showPopup({
-                    title: "Info",
-                    message: `You're on page ${page}.`,
-                  })
-                }
-                className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-blue-600 transition duration-200"
-              >
-                Show Popup
-              </button> */}
-              {/* <button
-                onClick={handleSubmit}
-                className="w-full bg-green-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-green-600 transition duration-200"
-              >
-                Send-to-Bot
-              </button> */}
+                  Select Branches
+                </label>
+                <div className="relative">
+                  <select
+                    id="branch"
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const selectedBranch = branches.find(
+                        (branch) => branch.id === selectedId
+                      );
+                      if (selectedBranch) {
+                        handleSelectBranch(selectedBranch);
+                      }
+                    }}
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select a branch
+                    </option>
+                    {branches.map((branch) => (
+                      <option
+                        key={branch.id}
+                        value={branch.id}
+                        disabled={selectedBranches.some(
+                          (item) => item.id === branch.id
+                        )}
+                      >
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {selectedBranches.map((branch) => (
+                    <div
+                      key={branch.id}
+                      className="flex items-center justify-between border border-gray-300 rounded-lg p-2 bg-gray-100"
+                    >
+                      <span className="text-gray-800">{branch.name}</span>
+                      <button
+                        onClick={() => handleRemoveBranch(branch.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <button
                 onClick={registerUser}
                 className="w-full bg-pink-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-pink-600 transition duration-200"
               >
                 Register
               </button>
-              {/* <button
-                onClick={() => getUser(profileData.id)}
-                className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-orange-600 transition duration-200"
-              >
-                Test Get User
-              </button> */}
             </div>
           </div>
         </div>

@@ -1,11 +1,24 @@
 import React, { useState } from "react";
 import { formatISODate } from "./helpers";
 
-const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
+const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward }) => {
   const [editingId, setEditingId] = useState(null);
   const [editableFields, setEditableFields] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedBranches, setSelectedBranches] = useState([]);
   const itemsPerPage = 2;
+
+  const handleSelectBranch = (branch) => {
+    if (!selectedBranches.some((item) => item.id === branch.id)) {
+      setSelectedBranches((prev) => [...prev, branch]);
+    }
+  };
+
+  const handleRemoveBranch = (branchId) => {
+    setSelectedBranches((prev) =>
+      prev.filter((branch) => branch.id !== branchId)
+    );
+  };
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
@@ -15,15 +28,22 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
     }));
   };
 
+  // Sort rewards by latest date first
+  const sortedRewards = rewards
+    ? [...rewards].sort(
+        (a, b) => new Date(b.date_added) - new Date(a.date_added)
+      )
+    : [];
+
   // Pagination logic
   const totalPages =
-    rewards && rewards.length > 0
-      ? Math.ceil(rewards.length / itemsPerPage)
+    sortedRewards.length > 0
+      ? Math.ceil(sortedRewards.length / itemsPerPage)
       : 1;
 
   const currentRewards =
-    rewards && rewards.length > 0
-      ? rewards.slice(
+    sortedRewards.length > 0
+      ? sortedRewards.slice(
           (currentPage - 1) * itemsPerPage,
           currentPage * itemsPerPage
         )
@@ -140,12 +160,69 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                       placeholder="Quantity"
                     />
                   </div>
+                  {/* Branch Selection */}
+                  <div>
+                    <label
+                      htmlFor="branch"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Branches
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="branch"
+                        onChange={(e) => {
+                          const selectedId = e.target.value;
+                          const selectedBranch = branches.find(
+                            (branch) => branch.id === selectedId
+                          );
+                          if (selectedBranch) {
+                            handleSelectBranch(selectedBranch);
+                          }
+                        }}
+                        className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Select a branch
+                        </option>
+                        {branches.map((branch) => (
+                          <option
+                            key={branch.id}
+                            value={branch.id}
+                            disabled={selectedBranches?.some(
+                              (item) => item.id === branch.id
+                            )}
+                          >
+                            {branch.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      {selectedBranches.map((branch) => (
+                        <div
+                          key={branch.id}
+                          className="flex items-center justify-between border border-gray-300 rounded-lg p-2 bg-gray-100"
+                        >
+                          <span className="text-gray-800">{branch.name}</span>
+                          <button
+                            onClick={() => handleRemoveBranch(branch.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   <div className="flex justify-between gap-4">
                     <button
                       onClick={() => {
                         handleUpdateReward({
                           ...reward,
                           ...editableFields,
+                          selectedBranches: selectedBranches
                         });
                         setEditingId(null);
                         setEditableFields({});
@@ -188,7 +265,24 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                       {formatISODate(reward.date_added)}
                     </span>
                   </p>
-
+                  {/* Conditionally render selectedBranches */}
+                  {reward.selectedBranches && reward.selectedBranches.length > 0 && (
+                    <div className="text-center mb-4">
+                      <span className="text-gray-600 text-sm mb-2 block">
+                        {reward.selectedBranches.length > 1 ? "Branches:" : "Branch:"}
+                      </span>
+                      <div className="flex flex-wrap justify-center space-x-2 mt-2">
+                        {reward.selectedBranches.map((branch) => (
+                          <span
+                            key={branch.id}
+                            className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
+                          >
+                            {branch.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="flex space-x-4">
                     <button
                       onClick={() => {
@@ -199,6 +293,7 @@ const RewardsList = ({ rewards, handleUpdateReward, handleDeleteReward }) => {
                           price: reward.price,
                           quantity: reward.quantity,
                         });
+                        setSelectedBranches(reward.selectedBranches);
                       }}
                       className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     >
