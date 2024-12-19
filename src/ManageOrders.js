@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import MonetizationOnTwoToneIcon from '@mui/icons-material/MonetizationOnTwoTone';
 
 const ManageOrders = ({
   adminData,
@@ -88,93 +89,95 @@ const ManageOrders = ({
       {data?.length === 0 ? (
         <p className="text-gray-600">No orders available.</p>
       ) : (
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th
-                className="border border-gray-300 p-2 text-left cursor-pointer"
-                onClick={() => handleSort("status")}
-              >
-                Status{" "}
-                {sortConfig.key === "status" && (
-                  <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                )}
-              </th>
-              <th
-                className="border border-gray-300 p-2 text-left cursor-pointer"
-                onClick={() => handleSort("date_ordered")}
-              >
-                Date Ordered{" "}
-                {sortConfig.key === "date_ordered" && (
-                  <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                )}
-              </th>
-              <th
-                className="border border-gray-300 p-2 text-left cursor-pointer"
-                onClick={() => handleSort("user")}
-              >
-                User{" "}
-                {sortConfig.key === "user" && (
-                  <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                )}
-              </th>
-              <th
-                className="border border-gray-300 p-2 text-left cursor-pointer"
-                onClick={() => handleSort("items")}
-              >
-                Items{" "}
-                {sortConfig.key === "items" && (
-                  <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
-                )}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedData?.map((orderWithUser, index) => {
-              const { order, user } = orderWithUser;
-              return (
-                <tr
-                  key={index}
-                  onClick={() => openOrderModal(orderWithUser)}
-                  className={`cursor-pointer ${
-                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  } hover:bg-gray-100`}
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse table-auto">
+            <thead>
+              <tr className="bg-red-500">
+                <th
+                  className="border-b border-gray-300 p-1 text-xs text-left cursor-pointer text-white"
+                  onClick={() => handleSort("status")}
                 >
-                  <td className="border border-gray-300 p-2 text-center">
-                    {renderStatus(order.status)}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {new Date(order.date_ordered)
-                      .toLocaleString()
-                      .replace(",", "")}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {user
-                      ? `${user.first_name} ${user.last_name}`
-                      : "User not found"}
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    {order.items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="border-t border-gray-200 pb-4 first:border-t-0"
-                      >
-                        {item.name} x{item.quantity}
-                      </div>
-                    ))}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  Status{" "}
+                  {sortConfig.key === "status" && (
+                    <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </th>
+                <th
+                  className="border-b border-gray-300 p-1 text-xs text-left cursor-pointer text-white"
+                  onClick={() => handleSort("date_ordered")}
+                >
+                  Date Ordered{" "}
+                  {sortConfig.key === "date_ordered" && (
+                    <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </th>
+                <th
+                  className="border-b border-gray-300 p-1 text-xs text-left cursor-pointer text-white"
+                  onClick={() => handleSort("user")}
+                >
+                  User{" "}
+                  {sortConfig.key === "user" && (
+                    <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </th>
+                <th
+                  className="border-b border-gray-300 p-1 text-xs text-left cursor-pointer text-white"
+                  onClick={() => handleSort("items")}
+                >
+                  Items{" "}
+                  {sortConfig.key === "items" && (
+                    <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
+                  )}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedData?.map((orderWithUser, index) => {
+                const { order, user } = orderWithUser;
+                return (
+                  <tr
+                    key={index}
+                    onClick={() => openOrderModal(orderWithUser)}
+                    className={`cursor-pointer ${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-gray-100`}
+                  >
+                    <td className="border-b border-gray-300 p-1 text-center text-xs">
+                      {renderStatus(order.status)}
+                    </td>
+                    <td className="border-b border-gray-300 p-1 text-xs">
+                      {new Date(order.date_ordered)
+                        .toLocaleString()
+                        .replace(",", "")}
+                    </td>
+                    <td className="border-b border-gray-300 p-1 text-xs">
+                      {user
+                        ? `${user.first_name} ${user.last_name}`
+                        : "User not found"}
+                    </td>
+                    <td className="border-b border-gray-300 p-1 text-xs">
+                      {order.items.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="border-t border-gray-200 pb-2 first:border-t-0 text-xs"
+                        >
+                          {item.name} x{item.quantity}
+                        </div>
+                      ))}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
-
+  
       {selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div
             className="bg-white rounded-lg shadow-lg w-4/5 md:w-1/2 overflow-y-auto relative flex flex-col max-h-[90%]"
-            style={{ maxHeight: "90vh" }} // Fallback for inline styles
+            style={{ maxHeight: "90vh" }}
           >
             <button
               onClick={closeOrderModal}
@@ -184,10 +187,10 @@ const ManageOrders = ({
               &times;
             </button>
             <div className="p-6 flex flex-col">
-              <h2 className="text-xl font-semibold mb-4 text-center">
+              <h2 className="text-lg font-semibold mb-4 text-center">
                 Order Details
               </h2>
-
+  
               {/* User Details */}
               <div className="flex items-center mb-4">
                 {selectedOrder.user?.photo_url && (
@@ -197,27 +200,27 @@ const ManageOrders = ({
                     className="w-16 h-16 rounded-full mr-4"
                   />
                 )}
-                <p className="text-gray-700">
+                <p className="text-gray-700 text-xs">
                   <strong>User:</strong>{" "}
                   {selectedOrder.user
                     ? `${selectedOrder.user.first_name} ${selectedOrder.user.last_name}`
                     : "User details not found"}
                 </p>
               </div>
-
+  
               {/* Order Information */}
-              <p className="mb-2">
+              <p className="mb-2 text-xs">
                 <strong>Order ID:</strong> {selectedOrder.order.id}
               </p>
-              <div>
+              <div className="text-xs">
                 <strong>Status:</strong>{" "}
                 {renderStatus(selectedOrder.order.status)}
               </div>
-              <p className="mb-4">
+              <p className="mb-4 text-xs">
                 <strong>Date Ordered:</strong>{" "}
                 {new Date(selectedOrder.order.date_ordered).toLocaleString()}
               </p>
-
+  
               {/* Items */}
               <div
                 className={`${
@@ -230,7 +233,7 @@ const ManageOrders = ({
                   {selectedOrder.order.items.map((item, idx) => (
                     <li
                       key={idx}
-                      className="flex items-center border-t border-gray-200 pb-4 first:border-t-0"
+                      className="flex items-center border-t border-gray-200 pb-2 first:border-t-0 text-xs"
                     >
                       {item.photo_url && (
                         <img
@@ -247,18 +250,18 @@ const ManageOrders = ({
                           <strong>Quantity:</strong> {item.quantity}
                         </p>
                         <p>
-                          <strong>Price:</strong> {item.price} 🪙
+                          <strong>Price:</strong> {item.price} <MonetizationOnTwoToneIcon />
                         </p>
                       </div>
                     </li>
                   ))}
                 </ul>
               </div>
-
-              <h3 className="font-semibold text-lg mt-4">
-                Total Price: {selectedOrder.order.total_price} 🪙
+  
+              <h3 className="font-semibold text-sm mt-4">
+                Total Price: {selectedOrder.order.total_price} <MonetizationOnTwoToneIcon />
               </h3>
-
+  
               {/* Conditionally Render Confirm and Cancel Buttons */}
               {selectedOrder.order.status === "Pending" && (
                 <>
@@ -275,27 +278,34 @@ const ManageOrders = ({
                   >
                     Confirm
                   </button>
-
+  
                   {/* Cancel Button */}
                   <button
-                    onClick={async () => {
-                      await handleCancelOrder(
-                        selectedOrder.order.id,
-                        selectedOrder.order.total_price
-                      ); // Call handleCancelOrder with the order ID
-                      closeOrderModal(); // Close the modal after canceling the order
-                    }}
+                      onClick={async () => {
+                        // Confirmation popup before proceeding with delete
+                        const confirmCancel = window.confirm(
+                          "Are you sure you want to cancel this order? The coins associated with this order will be refunded to the user"
+                        );
+                        if (confirmCancel) {
+                          await handleCancelOrder(
+                            selectedOrder.order.id,
+                            selectedOrder.order.total_price,
+                            adminData
+                          ); // Call handleCancelOrder with the order ID
+                          closeOrderModal(); // Close the modal after canceling the order
+                        }
+                      }}
                     className="mt-4 bg-red-500 hover:bg-red-600 text-white py-3 rounded-md w-full text-center font-semibold"
                   >
                     Cancel
                   </button>
                 </>
               )}
-
+  
               {/* Completed Order Info */}
-              {selectedOrder.order.status === "Completed" &&
+              {!(selectedOrder.order.status === "Pending") &&
                 selectedOrder.order.date_completed && (
-                  <p className="mt-4 text-sm text-gray-600">
+                  <p className="mt-4 text-xs text-gray-600">
                     Completed by{" "}
                     <strong>
                       {selectedOrder.order.date_completed.completed_by}
@@ -313,7 +323,7 @@ const ManageOrders = ({
         </div>
       )}
     </div>
-  );
+  );  
 };
 
 export default ManageOrders;

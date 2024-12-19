@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useToast } from "./Toast";
 import axios from "axios";
+import MonetizationOnTwoToneIcon from "@mui/icons-material/MonetizationOnTwoTone";
+import ShoppingCartTwoToneIcon from "@mui/icons-material/ShoppingCartTwoTone";
+import ListAltTwoToneIcon from "@mui/icons-material/ListAltTwoTone";
+import KeyboardBackspaceTwoToneIcon from "@mui/icons-material/KeyboardBackspaceTwoTone";
+import CloseTwoToneIcon from "@mui/icons-material/CloseTwoTone";
+import ArrowRightTwoToneIcon from "@mui/icons-material/ArrowRightTwoTone";
+import ArrowLeftTwoToneIcon from "@mui/icons-material/ArrowLeftTwoTone";
 
 const LoadingOverlay = () => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
@@ -89,17 +96,26 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-[90%]">
         {/* Header */}
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <h2 className="text-xl font-bold text-gray-800">
-            {view === "cart" ? "Your Cart 🛒" : "Order Summary 🧾"}
+          <h2 className="text-xl font-bold text-gray-800 flex items-center space-x-2 text-center">
+            {view === "cart" ? (
+              <>
+                <span>Your Cart&nbsp;</span>
+                <ShoppingCartTwoToneIcon />
+              </>
+            ) : (
+              <>
+                <span>Order Summary&nbsp;</span>
+                <ShoppingCartTwoToneIcon />
+              </>
+            )}
           </h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-red-500"
           >
-            ✖️
+            <CloseTwoToneIcon />
           </button>
         </div>
-
         {/* Cart View */}
         {view === "cart" && (
           <>
@@ -123,7 +139,9 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                         </p>
                         <p className="text-sm text-gray-500">
                           Price:{" "}
-                          <span className="font-medium">{item.price} 🪙</span>
+                          <span className="font-medium">
+                            {item.price} <MonetizationOnTwoToneIcon />
+                          </span>
                         </p>
                         <p className="text-sm text-gray-500">
                           Quantity:{" "}
@@ -159,7 +177,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                 ))
               ) : (
                 <p className="text-gray-500 text-center">
-                  Your cart is empty 🛒
+                  Your cart is empty <ShoppingCartTwoToneIcon />
                 </p>
               )}
             </div>
@@ -170,7 +188,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                 <p className="text-lg font-bold text-gray-800">
                   Total:{" "}
                   <span className="text-green-600">
-                    {cartData.total_price} 🪙
+                    {cartData.total_price} <MonetizationOnTwoToneIcon />
                   </span>
                 </p>
                 <button
@@ -195,7 +213,9 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                 >
                   <p className="font-medium text-gray-800">{item.name}</p>
                   <p className="text-gray-500">x{item.quantity}</p>
-                  <p className="text-gray-500">{item.price} 🪙</p>
+                  <p className="text-gray-500">
+                    {item.price} <MonetizationOnTwoToneIcon />
+                  </p>
                 </div>
               ))}
             </div>
@@ -204,7 +224,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
               <p className="text-lg font-bold text-gray-800">
                 Total:{" "}
                 <span className="text-green-600">
-                  {cartData.total_price} 🪙
+                  {cartData.total_price} <MonetizationOnTwoToneIcon />
                 </span>
               </p>
               <button
@@ -240,17 +260,17 @@ const OrdersModal = ({ orders, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-[90%] max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Your Orders 📃</h2>
+          <h2 className="text-xl font-bold text-gray-800">Your Orders <ListAltTwoToneIcon/></h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-red-500"
           >
-            ✖️
+            <CloseTwoToneIcon />
           </button>
         </div>
 
         {sortedOrders.length === 0 ? (
-          <p className="text-center text-gray-500">You have no orders yet 🛒</p>
+          <p className="text-center text-gray-500">You have no orders yet <ListAltTwoToneIcon/></p>
         ) : (
           sortedOrders.map((order, index) => (
             <div key={index} className="mb-6">
@@ -280,14 +300,14 @@ const OrdersModal = ({ orders, onClose }) => {
                           Quantity: {item.quantity}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Price: {item.price} 🪙
+                          Price: {item.price} <MonetizationOnTwoToneIcon />
                         </p>
                       </div>
                     </div>
                   </div>
                 ))}
                 <p className="text-sm text-gray-500 border-t border-gray-200">
-                  Total Coins: {order.total_price} 🪙
+                  Total Coins: {order.total_price} <MonetizationOnTwoToneIcon />
                 </p>
               </div>
             </div>
@@ -598,28 +618,46 @@ const Shop = () => {
     <>
       {/* Loading Overlay */}
       {loading && <LoadingOverlay />}
-  
+
       {/* Navbar */}
       <div className="w-full max-w-4xl flex justify-between items-center py-4 px-6 bg-[#333333] shadow-md">
-        <nav className="flex space-x-8">
+        <nav className="flex space-x-4">
           <button
             onClick={() => handleGetAllOrders(id)}
-            className="text-white text-lg font-semibold hover:text-green-400 transition-all duration-300"
+            className="text-white text-sm text-center font-medium hover:text-green-400 transition-all duration-300 whitespace-nowrap px-3 py-2"
           >
-            Orders 📃
+            Orders <ListAltTwoToneIcon />
           </button>
+          <div className="w-[1px] bg-white h-6 self-center" />{" "}
+          {/* Vertical Line */}
           <button
             onClick={() => handleGetAllCart(id)}
-            className="text-white text-lg font-semibold hover:text-green-400 transition-all duration-300"
+            className="text-white text-sm text-center font-medium hover:text-green-400 transition-all duration-300 whitespace-nowrap px-3 py-2"
           >
-            Cart 🛒
+            Cart <ShoppingCartTwoToneIcon />
           </button>
+          {/* Vertical Line */}
+          <div className="w-[1px] bg-white h-6 self-center" />{" "}
         </nav>
-        <div className="text-white font-semibold">
-          <span>Coins: {coins} 🪙</span>
+        <div className="flex items-center space-x-4">
+          <div className="w-[1px] bg-white h-6 self-center" />{" "}
+          {/* Vertical Line */}
+          <div className="text-white text-sm text-center font-medium">
+            <span>
+              Coins: {coins} <MonetizationOnTwoToneIcon />
+            </span>
+          </div>
+          <div className="w-[1px] bg-white h-6 self-center" />{" "}
+          {/* Vertical Line */}
+          <Link
+            to="/"
+            className="bg-gray-300 text-gray-700 rounded-lg text-xs disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300 px-2 py-1"
+          >
+            <KeyboardBackspaceTwoToneIcon />
+          </Link>
         </div>
       </div>
-  
+
       {/* Cart Modal */}
       {showCart && (
         <CartModal
@@ -630,31 +668,25 @@ const Shop = () => {
           onCheckout={handlePlaceOrder}
         />
       )}
-  
+
       {/* Orders Modal */}
       {showOrders && (
         <OrdersModal orders={orders} onClose={() => setShowOrders(false)} />
       )}
-  
+
       {/* Main Content Area */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-4 relative">
-        {/* Back Button */}
-        <Link
-          to="/"
-          className="absolute top-4 right-4 px-6 py-3 bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300"
-        >
-          🔙
-        </Link>
-  
+      <div className="flex flex-col items-center min-h-screen bg-gray-50 text-gray-800 p-6">
         {/* Centered Title */}
-        <h1 className="text-3xl font-bold text-gray-800 tracking-tight text-center mb-8">
-          Rewards ⭐
+        <h1 className="text-3xl font-extrabold text-gray-900 text-center mb-4 tracking-tight relative">
+          <span className="text-red-600">Rewards</span> Page
         </h1>
-  
+
         {/* Rewards List */}
         {rewards.length === 0 ? (
           <div className="text-center text-gray-500">
-            <p>No rewards available at the moment. Please check back later! 🙁</p>
+            <p>
+              No rewards available at the moment. Please check back later! 🙁
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -671,44 +703,40 @@ const Shop = () => {
                 <h2 className="text-xl text-center font-semibold text-gray-800 mb-2">
                   {reward.name}
                 </h2>
-                <p className="text-gray-600 text-center text-sm mb-2">
-                  Price:{" "}
-                  <span className="font-semibold text-gray-800">
-                    {reward.price}
-                  </span>{" "}
-                  🪙
+                <p className="text-gray-600 text-center font-semibold text-sm mb-2">
+                  Price: <span className="text-gray-800">{reward.price}</span>{" "}
+                  <MonetizationOnTwoToneIcon />
                 </p>
-                <p className="text-gray-600 text-center text-sm mb-2">
+                <p className="text-gray-600 text-center font-semibold text-sm mb-2">
                   Quantity:{" "}
-                  <span className="font-semibold text-gray-800">
-                    {reward.quantity}
-                  </span>
+                  <span className="text-gray-800">{reward.quantity}</span>
                 </p>
-  
+
                 {/* Conditionally render selectedBranches */}
-                {reward.selectedBranches && reward.selectedBranches.length > 0 && (
-                  <div className="text-center mb-4">
-                    <span className="text-gray-600 text-sm mb-2 block">
-                      {reward.selectedBranches.length > 1
-                        ? "Branches:"
-                        : "Branch:"}
-                    </span>
-                    <div className="flex flex-wrap justify-center space-x-2 mt-2">
-                      {reward.selectedBranches.map((branch) => (
-                        <span
-                          key={branch.id}
-                          className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
-                        >
-                          {branch.name}
-                        </span>
-                      ))}
+                {reward.selectedBranches &&
+                  reward.selectedBranches.length > 0 && (
+                    <div className="text-center mb-4">
+                      <span className="text-gray-600 text-sm font-semibold mb-2 block">
+                        {reward.selectedBranches.length > 1
+                          ? "Branches:"
+                          : "Branch:"}
+                      </span>
+                      <div className="flex flex-wrap justify-center space-x-2 mt-2">
+                        {reward.selectedBranches.map((branch) => (
+                          <span
+                            key={branch.id}
+                            className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
+                          >
+                            {branch.name}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-  
+                  )}
+
                 <button
                   onClick={async () => handleAddToCart(id, reward)}
-                  className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all duration-300"
+                  className="w-full py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-all duration-300"
                 >
                   Add to Cart
                 </button>
@@ -716,7 +744,7 @@ const Shop = () => {
             ))}
           </div>
         )}
-  
+
         {/* Pagination Controls */}
         {totalPages > 1 && rewards.length > 0 && (
           <div className="mt-8 flex justify-center items-center space-x-6">
@@ -725,7 +753,7 @@ const Shop = () => {
               disabled={currentPage === 1}
               className="flex justify-center items-center w-28 h-12 bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300"
             >
-              Previous
+              <ArrowLeftTwoToneIcon />
             </button>
             <p className="text-sm text-center">
               Page <br />
@@ -738,13 +766,13 @@ const Shop = () => {
               disabled={currentPage === totalPages}
               className="flex justify-center items-center w-28 h-12 bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition-all duration-300"
             >
-              Next
+              <ArrowRightTwoToneIcon />
             </button>
           </div>
         )}
       </div>
     </>
-  );  
+  );
 };
 
 export default Shop;

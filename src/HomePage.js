@@ -11,6 +11,8 @@ import {
 } from "@vkruglikov/react-telegram-web-app";
 import { QRCodeSVG } from "qrcode.react";
 import axios from "axios";
+import MonetizationOnTwoToneIcon from "@mui/icons-material/MonetizationOnTwoTone";
+import GradeTwoToneIcon from "@mui/icons-material/GradeTwoTone";
 
 const App = () => {
   const navigate = useNavigate();
@@ -243,11 +245,15 @@ const App = () => {
     };
     if (profileData?.username) {
       try {
-        const response = await axios.post("/api/register-user", updatedPayload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await axios.post(
+          "/api/register-user",
+          updatedPayload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
         if (response?.status) {
           localStorage.setItem("token", response?.token);
           if (role === "Teacher") {
@@ -594,258 +600,269 @@ const App = () => {
     <div>
       {isLoading && <LoadingOverlay />}
       {isRegistered ? (
-        <div className="bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-6">
-          <div className="text-center py-6 px-4">
-            <h1 className="text-2xl font-semibold text-gray-800 mb-2">
-              Welcome back,{" "}
-              {roleType === "Teacher"
-                ? "Teacher"
-                : roleType === "Admin"
-                ? "Admin"
-                : "Student"}{" "}
-              <span className="text-red-600">{profileData?.first_name}</span>
-            </h1>
-            <p className="text-lg text-gray-600">
-              We're glad to see you again! 🎉
-            </p>
-          </div>
-          <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
-            {profileData?.id && roleType === "Student" && (
-              <div className="flex flex-col items-center justify-center mb-4">
-                <QRCodeSVG value={profileData.id} size={150} />
-              </div>
-            )}
-            <div className="space-y-8">
+        <div className="flex flex-col items-center min-h-screen bg-gray-50 text-gray-800 p-6">
+          {/* Background Image */}
+          <img
+            src="https://www.mavistutorial.com/wp-content/uploads/2023/12/Logo-01.png"
+            alt="Hero Banner"
+            className="w-full"
+          />
+          <div className="w-full max-w-3xl p-1">
+            <div className="space-y-6">
               {/* User Data List */}
-              <ul className="space-y-6 bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
-                {[
-                  "photo_url",
-                  "first_name",
-                  "last_name",
-                  "username",
-                  "language_code",
-                  "id",
-                ].map((key) => (
-                  <li
-                    key={key}
-                    className="flex items-center space-x-6 border-b border-gray-200 pb-4 last:border-b-0"
-                  >
-                    <span className="font-semibold text-gray-600 capitalize w-36">
-                      {key.replace(/_/g, " ")}:
-                    </span>
-                    {key === "photo_url" ? (
-                      <img
-                        src={userDisplayData[key]}
-                        alt={`${userDisplayData.first_name}'s avatar`}
-                        className="w-16 h-16 rounded-full border-2 border-gray-300 shadow-md"
-                      />
-                    ) : (
-                      <span className="text-gray-800 break-words">
-                        {userDisplayData[key]}
+              <ul className="space-y-6 bg-white p-2 rounded-lg shadow-md max-w-md mx-auto">
+                <div className="flex flex-col items-center space-y-4 p-6 relative">
+                  {/* Header */}
+                  <header className="flex flex-col items-center justify-center">
+                    <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">
+                      <span className="text-red-600">
+                        {roleType === "Teacher"
+                          ? "Teacher"
+                          : roleType === "Admin"
+                          ? "Admin"
+                          : "Student"}{" "}
                       </span>
-                    )}
-                  </li>
-                ))}
-                {/* Conditionally render selectedBranches as badges */}
-                {userDisplayData?.selectedBranches?.length > 0 && (
-                  <li className="flex items-center space-x-6 border-b border-gray-200 pb-4 last:border-b-0">
-                    <span className="font-semibold text-gray-600 capitalize w-36">Branches:</span>
-                    <div className="flex flex-wrap justify-center space-x-2 mt-2">
-                      {userDisplayData.selectedBranches.map((branch) => (
-                        <span
-                          key={branch.id}
-                          className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
-                        >
-                          {branch.name}
-                        </span>
-                      ))}
-                    </div>
-                  </li>
-                )}
-              </ul>
-              {roleType === "Student" && (
-                <>
-                  <div className="flex items-center justify-center space-x-4 p-5 rounded-lg shadow-xl bg-white">
-                    {/* Coin Value */}
-                    <div className="text-gray-900 text-lg font-medium">
-                      Coins:{" "}
-                      <span className="text-yellow-600 font-bold text-lg">
-                        {coin} 🪙
-                      </span>
-                    </div>
-
-                    {/* Refresh Button */}
-                    <button
-                      onClick={() => handleRefreshCoins(profileData.id)}
-                      className="flex items-center justify-center h-10 px-4 rounded-full bg-blue-200 border-2 border-blue-400 hover:bg-blue-300 text-gray-800 font-medium transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      aria-label="Refresh Coins"
-                    >
-                      <div className="text-gray-600 text-sm font-semibold mx-2">
-                        🔄
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Go to Shop Button */}
-                  <Link
-                    to={{
-                      pathname: "/shop",
-                      search: `?id=${InitDataUnsafe?.user?.id}`, // Adding a query parameter to the URL
-                    }}
-                    className="flex items-center justify-center space-x-4 p-5 rounded-lg shadow-lg bg-green-200 border-2 border-green-400 hover:bg-green-300 text-gray-800 font-medium transition duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                  >
-                    <span className="text-lg">Redeem Coins 🛍️</span>
-                  </Link>
-                </>
-              )}
-              {roleType === "Teacher" && (
-                <div className="p-2 bg-gray-100 border-1 border-gray-200 rounded-lg max-w-md mx-auto">
-                  <h1 className="text-xl font-semibold text-center m-3">
-                    Update User Coins 🪙
-                  </h1>
-                  <div className="flex w-full relative">
-                    <input
-                      type="text"
-                      placeholder="Enter User ID"
-                      value={targetUserId}
-                      onChange={(e) => setTargetUserId(e.target.value)}
-                      className="w-[80%] px-4 py-2 border border-gray-300 rounded-l-lg rounded-r-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      Page
+                    </h1>
+                  </header>
+                  {/* Profile Picture */}
+                  <div className="relative">
+                    <img
+                      src={userDisplayData.photo_url}
+                      alt={`${userDisplayData.first_name}'s avatar`}
+                      className="w-32 h-32 rounded-full border-4 border-gray-300 shadow-lg"
                     />
-                    <button
-                      onClick={handleScanQR}
-                      className="px-4 py-2 bg-gray-200 border border-gray-300 rounded-r-none hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      aria-label="Scan QR Code"
-                    >
-                      Scan QR
-                    </button>
-                    <button
-                      onClick={() => handleGetUserCoins(targetUserId)}
-                      className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                      Get
-                    </button>
                   </div>
-                  {/* Display retrieved user details and coins */}
-                  {retrievedCoins !== null && (
-                    <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow-md w-full">
-                      <div className="flex items-center space-x-4">
-                        {retrievedCoins.photo_url && (
-                          <img
-                            src={retrievedCoins.photo_url}
-                            alt="User Profile"
-                            className="w-16 h-16 rounded-full shadow-md"
-                          />
-                        )}
-                        <div>
-                          <p className="text-lg font-bold text-gray-800">
-                            {retrievedCoins.first_name}{" "}
-                            {retrievedCoins.last_name}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            @{retrievedCoins.username}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="mt-4 text-lg text-gray-800">
-                        Coins:{" "}
-                        {coinToSend && parseInt(coinToSend, 10) !== 0 ? (
-                          <>
-                            <span className="font-bold text-yellow-600 line-through">
-                              {retrievedCoins.coin}🪙
-                            </span>{" "}
-                            <span
-                              className={`font-bold ${
-                                parseInt(coinToSend, 10) < 0
-                                  ? "text-red-600"
-                                  : "text-green-600"
-                              }`}
-                            >
-                              {retrievedCoins.coin + parseInt(coinToSend, 10)}🪙
-                            </span>
-                          </>
-                        ) : (
-                          <span className="font-bold text-yellow-600">
-                            {retrievedCoins.coin}🪙
+                  {/* Buttons Section (Only for Students) */}
+                  {roleType === "Student" && (
+                    <div className="flex flex-col items-center space-y-4 bg-gray-50 p-6 rounded-lg shadow-md max-w-md mx-auto w-full">
+                      {/* Coin Badge */}
+                      <button
+                        onClick={() => handleRefreshCoins(profileData.id)}
+                        className="flex items-center justify-center text-center bg-yellow-400 border-4 border-yellow-500 shadow-lg text-white text-md font-medium rounded-full px-6 py-2 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 transition-transform duration-300 transform hover:scale-105"
+                      >
+                        Coins: {coin} <MonetizationOnTwoToneIcon />
+                      </button>
+                      {/* Claim Rewards Button */}
+                      <Link
+                        to={{
+                          pathname: "/shop",
+                          search: `?id=${InitDataUnsafe?.user?.id}`,
+                        }}
+                        className="flex items-center justify-center text-center bg-red-400 border-4 border-red-500 shadow-lg text-white text-md font-medium rounded-full px-6 py-2 hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-300 transition-transform duration-300 transform hover:scale-105"
+                        aria-label="Claim Rewards"
+                      >
+                        Claim Rewards <GradeTwoToneIcon />
+                      </Link>
+                    </div>
+                  )}
+                  {/* Display other details */}
+                  <ul className="space-y-4 bg-gray-50 p-6 rounded-lg shadow-md max-w-md mx-auto w-full">
+                    {["first_name", "last_name", "username", "id"].map(
+                      (key) => (
+                        <li
+                          key={key}
+                          className="flex items-center justify-between border-b border-gray-200 pb-4 last:border-b-0"
+                        >
+                          <span className="font-semibold text-gray-600 capitalize">
+                            {key.replace(/_/g, " ")}:
                           </span>
-                        )}
-                      </p>
-
-                      {/* Input and Button for Coin Update */}
-                      <div className="flex flex-col space-y-2 w-full">
-                        <label
-                          htmlFor="coinInput"
-                          className="text-sm font-medium text-gray-600"
-                        >
-                          Enter coins to add or subtract:
-                        </label>
-                        <div className="flex items-center">
-                          <button
-                            onClick={() =>
-                              setCoinToSend((prev) =>
-                                prev.startsWith("-")
-                                  ? prev.slice(1)
-                                  : `-${prev}`
-                              )
-                            }
-                            className="px-2 py-1 bg-gray-300 rounded-lg mr-2"
-                          >
-                            +/-
-                          </button>
-                          <input
-                            id="coinInput"
-                            type="text"
-                            value={coinToSend}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              if (/^-?\d*$/.test(value)) {
-                                // Allow only numbers with optional "-" sign
-                                setCoinToSend(value);
-                              }
-                            }}
-                            placeholder="Enter coins"
-                            className="w-full max-w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                          />
+                          <span className="text-gray-800 break-words">
+                            {userDisplayData[key]}
+                          </span>
+                        </li>
+                      )
+                    )}
+                    {/* Conditionally render selectedBranches as badges */}
+                    {userDisplayData?.selectedBranches?.length > 0 && (
+                      <li className="flex items-center space-x-6 border-b border-gray-200 pb-4 last:border-b-0">
+                        <span className="font-semibold text-gray-600 capitalize w-36">
+                          Branches:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {userDisplayData.selectedBranches.map((branch) => (
+                            <span
+                              key={branch.id}
+                              className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
+                            >
+                              {branch.name}
+                            </span>
+                          ))}
                         </div>
-
+                      </li>
+                    )}
+                    {/* Student QR Code */}
+                    {profileData?.id && roleType === "Student" && (
+                      <li className="flex items-center space-x-6 border-b bg-gray-50 last:border-b-0">
+                        <span className="font-semibold text-gray-600 capitalize w-36">
+                          QR Code for Receiving Coins:
+                        </span>
+                        <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
+                          <QRCodeSVG value={profileData.id} size={120} />
+                        </div>
+                      </li>
+                    )}
+                  </ul>
+                  {roleType === "Teacher" && (
+                    <div className="p-2 border-1 bg-gray-50 shadow-md rounded-lg max-w-md mx-auto">
+                      <h1 className="text-3xl font-extrabold text-gray-900 text-center mt-4 mb-4 tracking-tight relative">
+                        Update <span className="text-red-600">User Coins</span>
+                      </h1>
+                      <div className="flex w-full relative">
+                        <input
+                          type="text"
+                          placeholder="Enter User ID"
+                          value={targetUserId}
+                          onChange={(e) => setTargetUserId(e.target.value)}
+                          className="w-[80%] px-4 py-2 text-xs border border-gray-300 rounded-l-lg rounded-r-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                        />
                         <button
-                          onClick={() =>
-                            handleUpdateUserCoinsSubmit(targetUserId)
-                          }
-                          className="px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                          onClick={handleScanQR}
+                          className="px-4 py-2 bg-gray-200 border border-gray-300 font-semibold rounded-r-none hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          aria-label="Scan QR Code"
                         >
-                          Update User's Coins
+                          Scan QR
+                        </button>
+                        <button
+                          onClick={() => handleGetUserCoins(targetUserId)}
+                          className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-r-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        >
+                          Get
                         </button>
                       </div>
+                      {/* Display retrieved user details and coins */}
+                      {retrievedCoins !== null && (
+                        <div className="mt-4 p-4 bg-white rounded-lg shadow-md w-full">
+                          <div className="flex items-center space-x-4">
+                            {retrievedCoins.photo_url && (
+                              <img
+                                src={retrievedCoins.photo_url}
+                                alt="User Profile"
+                                className="w-16 h-16 rounded-full border-4 border-gray-300 shadow-lg"
+                              />
+                            )}
+                            <div>
+                              <p className="text-lg font-bold text-gray-800">
+                                {retrievedCoins.first_name}{" "}
+                                {retrievedCoins.last_name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                @{retrievedCoins.username}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="mt-4 text-lg text-gray-800">
+                            Coins:{" "}
+                            {coinToSend && parseInt(coinToSend, 10) !== 0 ? (
+                              <>
+                                <span className="font-bold text-yellow-600 line-through">
+                                  {retrievedCoins.coin}
+                                  <MonetizationOnTwoToneIcon />
+                                </span>{" "}
+                                <span
+                                  className={`font-bold ${
+                                    parseInt(coinToSend, 10) < 0
+                                      ? "text-red-600"
+                                      : "text-green-600"
+                                  }`}
+                                >
+                                  {retrievedCoins.coin +
+                                    parseInt(coinToSend, 10)}
+                                  <MonetizationOnTwoToneIcon />
+                                </span>
+                              </>
+                            ) : (
+                              <span className="font-bold text-yellow-600">
+                                {retrievedCoins.coin}
+                                <MonetizationOnTwoToneIcon />
+                              </span>
+                            )}
+                          </p>
+
+                          {/* Input and Button for Coin Update */}
+                          <div className="flex flex-col space-y-2 w-full">
+                            <label
+                              htmlFor="coinInput"
+                              className="text-xs font-medium text-gray-600"
+                            >
+                              Enter coins to add or subtract:
+                            </label>
+                            <div className="flex items-center">
+                              <button
+                                onClick={() =>
+                                  setCoinToSend((prev) =>
+                                    prev.startsWith("-")
+                                      ? prev.slice(1)
+                                      : `-${prev}`
+                                  )
+                                }
+                                className="px-2 py-1 bg-gray-300 rounded-lg mr-2"
+                              >
+                                +/-
+                              </button>
+                              <input
+                                id="coinInput"
+                                type="text"
+                                value={coinToSend}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (/^-?\d*$/.test(value)) {
+                                    // Allow only numbers with optional "-" sign
+                                    setCoinToSend(value);
+                                  }
+                                }}
+                                placeholder="Enter coins"
+                                className="w-full max-w-full px-4 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                              />
+                            </div>
+
+                            <button
+                              onClick={() =>
+                                handleUpdateUserCoinsSubmit(targetUserId)
+                              }
+                              className="px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                            >
+                              Update
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {roleType === "Admin" && (
+                    <div className="flex items-center justify-center space-x-4 w-full max-w-3xl mt-8">
+                      <AdminPage adminData={InitDataUnsafe?.user} />
                     </div>
                   )}
                 </div>
-              )}
-              {roleType === "Admin" && (
-                <>
-                  <div className="flex items-center justify-center space-x-4">
-                    <AdminPage adminData={InitDataUnsafe?.user} />
-                  </div>
-                </>
-              )}
+              </ul>
             </div>
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-6">
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
           <BackButton onClick={handleBackButtonClick} />
+          <img
+            src="https://www.mavistutorial.com/wp-content/uploads/2023/12/Logo-01.png"
+            alt="Hero Banner"
+            className="w-full"
+          />
           {/* <MainButton onClick={handleMainButtonClick} text="Main Button" /> */}
           <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-8">
-            <h1 className="text-2xl font-bold text-center mb-6">
-              Mavis Tutorial Web App
-            </h1>
-
+            {/* Header */}
+            <header className="flex flex-col items-center justify-center">
+              <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight mb-6">
+                <span className="text-red-600">Registration </span>
+                Page
+              </h1>
+            </header>
             {profileData.photo_url && (
               <div className="flex justify-center mb-6">
                 <img
                   src={profileData.photo_url}
                   alt="User Profile"
-                  className="w-20 h-20 rounded-full shadow-md"
+                  className="w-32 h-32 rounded-full border-4 border-gray-300 shadow-lg"
                 />
               </div>
             )}
@@ -857,86 +874,95 @@ const App = () => {
             </div>
 
             <div className="mt-8 space-y-4">
-              <div className="mb-4">
-                <label
-                  htmlFor="role"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Select Role
-                </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="Student">Student 🧑‍🎓</option>
-                  <option value="Teacher">Teacher 👩‍🏫</option>
-                  {/* <option value="Admin">Admin 👨‍💼</option> */}
-                </select>
-              </div>
-              {/* Branch Selection */}
-              <div>
-                <label
-                  htmlFor="branch"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Select Branches
-                </label>
-                <div className="relative">
-                  <select
-                    id="branch"
-                    onChange={(e) => {
-                      const selectedId = e.target.value;
-                      const selectedBranch = branches.find(
-                        (branch) => branch.id === selectedId
-                      );
-                      if (selectedBranch) {
-                        handleSelectBranch(selectedBranch);
-                      }
-                    }}
-                    className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Select a branch
-                    </option>
-                    {branches.map((branch) => (
-                      <option
-                        key={branch.id}
-                        value={branch.id}
-                        disabled={selectedBranches.some(
-                          (item) => item.id === branch.id
-                        )}
-                      >
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {selectedBranches.map((branch) => (
-                    <div
-                      key={branch.id}
-                      className="flex items-center justify-between border border-gray-300 rounded-lg p-2 bg-gray-100"
-                    >
-                      <span className="text-gray-800">{branch.name}</span>
-                      <button
-                        onClick={() => handleRemoveBranch(branch.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={registerUser}
-                className="w-full bg-pink-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-pink-600 transition duration-200"
-              >
-                Register
-              </button>
+            <div className="mb-4">
+  <label
+    htmlFor="role"
+    className="block text-sm font-medium text-gray-700 mb-2"
+  >
+    Select Role
+  </label>
+  <div className="relative">
+    <select
+      id="role"
+      value={role}
+      onChange={(e) => setRole(e.target.value)}
+      className="block w-full appearance-none bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+    >
+      <option value="Student">Student</option>
+      <option value="Teacher">Teacher</option>
+      {/* <option value="Admin">Admin</option> */}
+    </select>
+    <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
+      ▼
+    </span>
+  </div>
+</div>
+
+{/* Branch Selection */}
+<div className="mb-4">
+  <label
+    htmlFor="branch"
+    className="block text-sm font-medium text-gray-700 mb-2"
+  >
+    Select Branches
+  </label>
+  <div className="relative">
+    <select
+      id="branch"
+      onChange={(e) => {
+        const selectedId = e.target.value;
+        const selectedBranch = branches.find(
+          (branch) => branch.id === selectedId
+        );
+        if (selectedBranch) {
+          handleSelectBranch(selectedBranch);
+        }
+      }}
+      className="block w-full appearance-none bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+      defaultValue=""
+    >
+      <option value="" disabled>
+        Select a branch
+      </option>
+      {branches.map((branch) => (
+        <option
+          key={branch.id}
+          value={branch.id}
+          disabled={selectedBranches.some((item) => item.id === branch.id)}
+        >
+          {branch.name}
+        </option>
+      ))}
+    </select>
+    <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
+      ▼
+    </span>
+  </div>
+
+  <div className="mt-4 space-y-2">
+    {selectedBranches.map((branch) => (
+      <div
+        key={branch.id}
+        className="flex items-center justify-between border border-gray-300 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition"
+      >
+        <span className="text-gray-800">{branch.name}</span>
+        <button
+          onClick={() => handleRemoveBranch(branch.id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          Remove
+        </button>
+      </div>
+    ))}
+  </div>
+</div>
+
+<button
+  onClick={registerUser}
+  className="w-full bg-red-600 text-white py-3 px-4 rounded-lg text-lg font-semibold shadow-md hover:bg-pink-600 transition duration-200"
+>
+  Register
+</button>
             </div>
           </div>
         </div>

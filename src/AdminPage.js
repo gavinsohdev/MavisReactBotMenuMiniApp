@@ -6,9 +6,11 @@ import ApproveUser from "./ApproveUser";
 import Modal from "./Modal"; // Import the Modal component
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+// import { useShowPopup } from '@vkruglikov/react-telegram-web-app';
 
 const AdminPage = ({ adminData }) => {
   const toast = useToast();
+  // const showPopup = useShowPopup();
   const [branches, setBranches] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [rewards, setRewards] = useState([]);
@@ -366,11 +368,6 @@ const AdminPage = ({ adminData }) => {
     try {
       const dataResponse = await updateOrder(orderId, adminData);
 
-      console.log(
-        "dataResponse handleUpdateOrder:",
-        JSON.stringify(dataResponse)
-      );
-
       if (dataResponse?.status) {
         // Update the local state for the selected order
         setOrdersWithUsers((prevOrders) =>
@@ -409,12 +406,12 @@ const AdminPage = ({ adminData }) => {
     }
   };
 
-  const cancelOrder = async (orderId, totalPrice) => {
+  const cancelOrder = async (orderId, totalPrice, adminData) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
         "/api/cancel-order",
-        { orderId, totalPrice },
+        { orderId, totalPrice, adminData },
         {
           headers: {
             "Content-Type": "application/json",
@@ -433,9 +430,9 @@ const AdminPage = ({ adminData }) => {
     }
   };
 
-  const handleCancelOrder = async (orderId, totalPrice) => {
+  const handleCancelOrder = async (orderId, totalPrice, adminData) => {
     try {
-      const dataResponse = await cancelOrder(orderId, totalPrice);
+      const dataResponse = await cancelOrder(orderId, totalPrice, adminData);
 
       if (dataResponse?.status) {
         // Update local state to reflect the cancellation
@@ -456,6 +453,7 @@ const AdminPage = ({ adminData }) => {
               : orderWithUser
           )
         );
+        // showPopup({ message: 'Order successfully canceled!' }).then(buttonId => console.log(buttonId))
         toast(
           "success",
           dataResponse.message || "Order successfully canceled!"
@@ -475,12 +473,11 @@ const AdminPage = ({ adminData }) => {
   };
 
   return (
-    <div>
-      <h1 className="text-xl font-semibold text-center mb-2">Admin Panel</h1>
+    <div className="flex flex-col items-center space-y-4 bg-gray-50 p-6 rounded-lg shadow-md max-w-md mx-auto w-full">
       {/* Tabs */}
-      <div className="flex justify-center space-x-4 mb-4">
+      <div className="flex flex-wrap justify-center gap-2 mb-4">
         <button
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-3 py-1 text-sm rounded-md ${
             activeTab === "rewards"
               ? "bg-gray-500 text-white"
               : "bg-gray-200 text-gray-700"
@@ -490,7 +487,7 @@ const AdminPage = ({ adminData }) => {
           Manage Rewards
         </button>
         <button
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-3 py-1 text-sm rounded-md ${
             activeTab === "orders"
               ? "bg-gray-500 text-white"
               : "bg-gray-200 text-gray-700"
@@ -500,7 +497,7 @@ const AdminPage = ({ adminData }) => {
           Manage Orders
         </button>
         <button
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-3 py-1 text-sm rounded-md ${
             activeTab === "approve"
               ? "bg-gray-500 text-white"
               : "bg-gray-200 text-gray-700"
@@ -531,142 +528,121 @@ const AdminPage = ({ adminData }) => {
           />
           {hasMore && !loading && (
             <button
-              className="w-full bg-purple-500 text-white py-3 px-4 rounded-lg text-lg font-medium shadow-md hover:bg-purple-600 transition duration-200"
+              className="w-full bg-gray-500 text-white py-2 rounded-md text-sm font-medium shadow-sm hover:bg-gray-500 transition duration-200"
               onClick={() => fetchOrdersWithUsers(true)}
             >
               Load More
             </button>
           )}
-          {loading && <p>Loading...</p>}
+          {loading && (
+            <div className="flex space-x-2 items-center justify-center">
+              <div className="w-3 h-3 bg-gray-500 animate-bounce delay-100"></div>
+              <div className="w-3 h-3 bg-gray-500 animate-bounce delay-200"></div>
+              <div className="w-3 h-3 bg-gray-500 animate-bounce delay-300"></div>
+            </div>
+          )}
         </div>
       )}
       {activeTab === "approve" && (
-        <div className="space-y-4">
+        <div className="w-full">
           <ApproveUser />
         </div>
       )}
       {/* Floating Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-4 right-4 bg-blue-500 text-white w-16 h-16 flex items-center justify-center rounded-full shadow-2xl hover:bg-blue-600 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-blue-300 transform transition-all duration-300 ease-in-out"
+        className="fixed bottom-4 right-4 bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300"
       >
-        <span className="text-3xl font-bold">+</span>
+        <span className="text-2xl font-bold">+</span>
       </button>
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-          Add New Reward
-        </h2>
-        <div className="space-y-6">
-          <input
-            type="text"
-            name="name"
-            value={newReward.name}
-            onChange={handleInputChange}
-            placeholder="Name"
-            className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-          />
-          <input
-            type="text"
-            name="photo_url"
-            value={newReward.photo_url}
-            onChange={handleInputChange}
-            placeholder="Photo URL"
-            className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-          />
-          <input
-            type="number"
-            name="price"
-            value={newReward.price}
-            onChange={handleInputChange}
-            placeholder="Price"
-            className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-          />
-          <input
-            type="number"
-            name="quantity"
-            value={newReward.quantity}
-            onChange={handleInputChange}
-            placeholder="Quantity"
-            className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-          />
-
-          {/* Branch Dropdown */}
-          <div className="relative">
+        {/* Header */}
+        <header className="flex flex-col items-center justify-center mb-4">
+          <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight">
+            <span className="text-red-600">Add New&nbsp;</span>
+            Reward
+          </h1>
+        </header>
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="name"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Name
+            </label>
             <input
               type="text"
-              value={newReward.selectedBranches
-                .map((branch) => branch.name)
-                .join(", ")}
-              placeholder="Select Branches"
-              readOnly
-              className="w-full px-6 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              name="name"
+              value={newReward.name}
+              onChange={handleInputChange}
+              placeholder="Name"
+              className="w-full px-4 py-2 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
             />
-            <button
-              onClick={() => setShowDropdown((prev) => !prev)}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-gray-300 rounded"
-            >
-              ↓
-            </button>
-            {showDropdown && (
-              <ul
-                className="absolute left-0 w-full bg-white border border-gray-300 rounded-lg max-h-48 overflow-y-auto z-10"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {branches.map((branch) => (
-                  <li
-                    key={branch.id}
-                    onClick={() => handleBranchSelection(branch)}
-                    className={`px-4 py-2 hover:bg-gray-100 cursor-pointer flex justify-between ${
-                      newReward.selectedBranches.some(
-                        (selected) => selected.id === branch.id
-                      )
-                        ? "bg-green-100"
-                        : ""
-                    }`}
-                  >
-                    {branch.name}
-                    {newReward.selectedBranches.some(
-                      (selected) => selected.id === branch.id
-                    ) && <span className="text-green-500">✔</span>}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
-
-          {/* Display Selected Branches */}
-          <div className="space-y-2">
-            {newReward.selectedBranches.map((branch) => (
-              <div
-                key={branch.id}
-                className="flex items-center justify-between px-4 py-2 bg-gray-100 rounded-lg"
-              >
-                <span>{branch.name}</span>
-                <button
-                  onClick={() => handleRemoveBranch(branch.id)}
-                  className="text-red-500"
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex space-x-4">
-            <button
-              onClick={handleAddReward}
-              className="flex-1 px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+          <div>
+            <label
+              htmlFor="photo_url"
+              className="text-sm font-semibold text-gray-700"
             >
-              Add
-            </button>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="flex-1 px-8 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-              Cancel
-            </button>
+              Photo URL
+            </label>
+            <input
+              type="text"
+              name="photo_url"
+              value={newReward.photo_url}
+              onChange={handleInputChange}
+              placeholder="Photo URL"
+              className="w-full px-4 py-2 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+            />
           </div>
+          <div>
+            <label
+              htmlFor="price"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Price
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={newReward.price}
+              onChange={handleInputChange}
+              placeholder="Price"
+              className="w-full px-4 py-2 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="quantity"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Quantity
+            </label>
+            <input
+              type="number"
+              name="quantity"
+              value={newReward.quantity}
+              onChange={handleInputChange}
+              placeholder="Quantity"
+              className="w-full px-4 py-2 border text-sm border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+        </div>
+        <div className="flex justify-between mt-4">
+          <button
+            onClick={handleAddReward}
+            className="flex-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 mr-2"
+          >
+            Add
+          </button>
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Cancel
+          </button>
         </div>
       </Modal>
     </div>

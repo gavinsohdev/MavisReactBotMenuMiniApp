@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { formatISODate } from "./helpers";
+import MonetizationOnTwoToneIcon from '@mui/icons-material/MonetizationOnTwoTone';
+import ArrowRightTwoToneIcon from "@mui/icons-material/ArrowRightTwoTone";
+import ArrowLeftTwoToneIcon from "@mui/icons-material/ArrowLeftTwoTone";
 
-const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward }) => {
+const RewardsList = ({
+  rewards,
+  branches,
+  handleUpdateReward,
+  handleDeleteReward,
+}) => {
   const [editingId, setEditingId] = useState(null);
   const [editableFields, setEditableFields] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,15 +70,7 @@ const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward
       <div className="grid grid-cols-1 gap-6">
         {currentRewards.length > 0 ? (
           currentRewards.map((reward) => (
-            <div
-              key={reward.id}
-              className="p-4 bg-white shadow-lg rounded-lg border"
-            >
-              <img
-                src={reward.photo_url}
-                alt={reward.id}
-                className="w-full h-40 object-cover rounded-md mb-4"
-              />
+            <div key={reward.id}>
               {editingId === reward.id ? (
                 <div className="space-y-4 p-6 bg-white rounded-lg shadow-md w-full max-w-md mx-auto">
                   <div>
@@ -222,7 +222,7 @@ const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward
                         handleUpdateReward({
                           ...reward,
                           ...editableFields,
-                          selectedBranches: selectedBranches
+                          selectedBranches: selectedBranches,
                         });
                         setEditingId(null);
                         setEditableFields({});
@@ -244,13 +244,18 @@ const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward
                 </div>
               ) : (
                 <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md space-y-4">
+                  <img
+                    src={reward.photo_url}
+                    alt={reward.id}
+                    className="w-full h-40 object-cover rounded-md mb-4"
+                  />
                   <p className="text-lg font-semibold text-center text-gray-800">
                     {reward.name}
                   </p>
                   <p className="text-sm text-center text-gray-600">
                     Price:{" "}
                     <span className="font-bold text-gray-800">
-                      {reward.price} 🪙
+                      {reward.price} <MonetizationOnTwoToneIcon/>
                     </span>
                   </p>
                   <p className="text-sm text-center text-gray-600">
@@ -266,24 +271,27 @@ const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward
                     </span>
                   </p>
                   {/* Conditionally render selectedBranches */}
-                  {reward.selectedBranches && reward.selectedBranches.length > 0 && (
-                    <div className="text-center mb-4">
-                      <span className="text-gray-600 text-sm mb-2 block">
-                        {reward.selectedBranches.length > 1 ? "Branches:" : "Branch:"}
-                      </span>
-                      <div className="flex flex-wrap justify-center space-x-2 mt-2">
-                        {reward.selectedBranches.map((branch) => (
-                          <span
-                            key={branch.id}
-                            className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
-                          >
-                            {branch.name}
-                          </span>
-                        ))}
+                  {reward.selectedBranches &&
+                    reward.selectedBranches.length > 0 && (
+                      <div className="text-center mb-4">
+                        <span className="text-gray-600 text-sm mb-2 block">
+                          {reward.selectedBranches.length > 1
+                            ? "Branches:"
+                            : "Branch:"}
+                        </span>
+                        <div className="flex flex-wrap justify-center space-x-2 mt-2">
+                          {reward.selectedBranches.map((branch) => (
+                            <span
+                              key={branch.id}
+                              className="px-3 py-1 text-xs font-semibold text-white bg-amber-500 rounded-full truncate mb-2"
+                            >
+                              {branch.name}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  <div className="flex space-x-4">
+                    )}
+                  <div className="flex justify-center space-x-4">
                     <button
                       onClick={() => {
                         setEditingId(reward.id);
@@ -295,9 +303,9 @@ const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward
                         });
                         setSelectedBranches(reward.selectedBranches);
                       }}
-                      className="w-full bg-yellow-500 text-white rounded-lg py-2 px-4 hover:bg-yellow-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      className="bg-yellow-500 text-white rounded-md py-1.5 px-3 text-sm hover:bg-yellow-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                     >
-                      Edit Reward
+                      Edit
                     </button>
                     <button
                       onClick={() => {
@@ -309,41 +317,38 @@ const RewardsList = ({ rewards, branches, handleUpdateReward, handleDeleteReward
                           handleDeleteReward(reward.id); // Proceed with deletion if confirmed
                         }
                       }}
-                      className="w-full bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                      className="bg-red-500 text-white rounded-md py-1.5 px-3 text-sm hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-400"
                     >
-                      Delete Reward
+                      Delete
                     </button>
                   </div>
                 </div>
               )}
+              {/* Pagination Controls */}
+              <div className="mt-4 flex justify-center items-center space-x-2">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
+                >
+                  <ArrowLeftTwoToneIcon/>
+                </button>
+                <p className="text-xs text-center">
+                  Page {currentPage} of {totalPages}
+                </p>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
+                >
+                  <ArrowRightTwoToneIcon/>
+                </button>
+              </div>
             </div>
           ))
         ) : (
           <p className="text-center text-gray-600">No rewards available.</p>
         )}
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="mt-4 flex justify-center items-center space-x-4">
-        <button
-          onClick={handlePrevPage}
-          disabled={currentPage === 1}
-          className="flex justify-center items-center w-24 h-10 bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          Previous
-        </button>
-        <p className="text-sm text-center">
-          Page
-          <br />
-          {currentPage} of {totalPages}
-        </p>
-        <button
-          onClick={handleNextPage}
-          disabled={currentPage === totalPages}
-          className="flex justify-center items-center w-24 h-10 bg-gray-300 text-gray-700 rounded-lg text-sm disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          Next
-        </button>
       </div>
     </div>
   );

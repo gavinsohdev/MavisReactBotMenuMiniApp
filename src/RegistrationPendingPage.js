@@ -5,31 +5,30 @@ import { QRCodeSVG } from "qrcode.react";
 const RegistrationPendingPage = () => {
   const { userId } = useParams();
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-100 to-gray-300 p-6">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-lg text-center">
-        <h1 className="text-4xl font-extrabold text-red-600 mb-6">
+    <div className="min-h-screen flex flex-col items-center bg-gray-50 p-6">
+      {/* Background Image */}
+      <img
+        src="https://www.mavistutorial.com/wp-content/uploads/2023/12/Logo-01.png"
+        alt="Hero Banner"
+        className="w-full"
+      />
+      <div className="bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center">
+        <h1 className="text-3xl font-bold text-red-500 mb-4">
           Approval Pending
         </h1>
-        <div className="flex flex-col items-center justify-center mb-4">
-                <QRCodeSVG value={userId} size={150} />
-                <span>User ID: {userId}</span>
-              </div>
-              
-        <p className="text-lg text-gray-700 mb-4">
-          Your registration as a Teacher is under review.
+        <div className="flex flex-col items-center justify-center mb-6 space-y-2">
+          <div className="bg-gray-100 p-4 rounded-lg shadow-sm">
+            <QRCodeSVG value={userId} size={150} className="rounded-md" />
+          </div>
+          <span className="text-sm font-medium text-gray-600">
+            User ID: <span className="font-semibold">{userId}</span>
+          </span>
+        </div>
+        <p className="text-base text-gray-600 leading-relaxed mb-4">
+          Your registration as a <span className="font-semibold">Teacher</span>{" "}
+          is under review. Please provide the QR Code or User ID to the Admin
+          for approval.
         </p>
-        {/* <p className="text-md text-gray-600">
-          Please wait for Admin approval. You will be notified once the process
-          is complete.
-        </p> */}
-        {/* <div className="mt-8">
-        <button
-          className="px-6 py-3 text-white bg-red-500 rounded-full hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300 transition"
-          onClick={() => window.location.reload()}
-        >
-          Refresh
-        </button>
-      </div> */}
       </div>
     </div>
   );
