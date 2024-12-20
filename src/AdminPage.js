@@ -642,7 +642,7 @@ const AdminPage = ({ adminData }) => {
           </div>
         </div>
         {/* Branch Selection */}
-        <div className="mb-6">
+        <div className="mb-6 mt-4">
           <label
             htmlFor="branch"
             className="block text-sm font-semibold text-gray-700 mb-2"
