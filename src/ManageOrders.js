@@ -247,7 +247,7 @@ const ManageOrders = ({
                           <strong>Item:</strong> {item.name}
                         </p>
                         <p>
-                          <strong>Quantity:</strong> {item.quantity}
+                          <strong>Quantity Available:</strong> {item.quantity}
                         </p>
                         <p>
                           <strong>Price:</strong> {item.price} <MonetizationOnTwoToneIcon />

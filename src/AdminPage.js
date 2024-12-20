@@ -6,11 +6,12 @@ import ApproveUser from "./ApproveUser";
 import Modal from "./Modal"; // Import the Modal component
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
-// import { useShowPopup } from '@vkruglikov/react-telegram-web-app';
+import { useShowPopup } from "@vkruglikov/react-telegram-web-app";
+import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 
 const AdminPage = ({ adminData }) => {
   const toast = useToast();
-  // const showPopup = useShowPopup();
+  const showPopup = useShowPopup();
   const [branches, setBranches] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [rewards, setRewards] = useState([]);
@@ -111,7 +112,9 @@ const AdminPage = ({ adminData }) => {
       quantity <= 0 ||
       selectedBranches.length === 0
     ) {
-      alert("Please fill all fields with valid values.");
+      showPopup({ message: "Please fill all fields with valid values." }).then(
+        (buttonId) => console.log(buttonId)
+      );
       return;
     }
 
@@ -140,8 +143,16 @@ const AdminPage = ({ adminData }) => {
       const rewardsData = await getAllRewards();
       setRewards(rewardsData);
       setIsModalOpen(false);
+      toast(
+        "success",
+        "Reward added successfully!"
+      );      
     } catch (error) {
       console.error("Error adding reward:", error);
+      toast(
+        "error",
+        "Failed to add reward!"
+      );   
     }
   };
 
@@ -247,6 +258,7 @@ const AdminPage = ({ adminData }) => {
   };
 
   const handleUpdateReward = async (updatedReward) => {
+    console.log('updatedReward: ' + JSON.stringify(updatedReward))
     try {
       await updateReward({
         ...updatedReward,
@@ -453,7 +465,6 @@ const AdminPage = ({ adminData }) => {
               : orderWithUser
           )
         );
-        // showPopup({ message: 'Order successfully canceled!' }).then(buttonId => console.log(buttonId))
         toast(
           "success",
           dataResponse.message || "Order successfully canceled!"
@@ -504,7 +515,7 @@ const AdminPage = ({ adminData }) => {
           }`}
           onClick={() => setActiveTab("approve")}
         >
-          Approve Registration
+          Approve Teacher Registration
         </button>
       </div>
       {/* Content for each Tab */}
@@ -551,9 +562,9 @@ const AdminPage = ({ adminData }) => {
       {/* Floating Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-4 right-4 bg-blue-500 text-white w-12 h-12 flex items-center justify-center rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300"
+        className="fixed bottom-4 right-4 bg-red-500 text-white w-12 h-12 flex items-center justify-center rounded-full shadow-lg hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-300 transition-all duration-300"
       >
-        <span className="text-2xl font-bold">+</span>
+        <AddTwoToneIcon/>
       </button>
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -630,18 +641,73 @@ const AdminPage = ({ adminData }) => {
             />
           </div>
         </div>
-        <div className="flex justify-between mt-4">
+        {/* Branch Selection */}
+        <div className="mb-6">
+          <label
+            htmlFor="branch"
+            className="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Select Branches
+          </label>
+          <div className="relative">
+            <select
+              id="branch"
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selectedBranch = branches.find(
+                  (branch) => branch.id === selectedId
+                );
+                if (selectedBranch) {
+                  handleBranchSelection(selectedBranch);
+                }
+              }}
+              className="block w-full appearance-none bg-white border border-gray-300 rounded-md shadow-sm px-4 py-2 text-sm focus:ring-green-500 focus:border-green-500 transition duration-150"
+              defaultValue=""
+            >
+              <option value="" disabled>
+                Select a branch
+              </option>
+              {branches.map((branch) => (
+                <option
+                  key={branch.id}
+                  value={branch.id}
+                  disabled={newReward.selectedBranches.some(
+                    (item) => item.id === branch.id
+                  )}
+                >
+                  {branch.name}
+                </option>
+              ))}
+            </select>
+            <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-500">
+              ▼
+            </span>
+          </div>
+
+          {/* Display Selected Branches */}
+          <div className="mt-4 space-y-2">
+            {newReward.selectedBranches.map((branch) => (
+              <div
+                key={branch.id}
+                className="flex items-center justify-between px-4 py-2 bg-gray-50 border border-gray-300 rounded-md hover:bg-gray-100 transition"
+              >
+                <span className="text-gray-800 text-sm">{branch.name}</span>
+                <button
+                  onClick={() => handleRemoveBranch(branch.id)}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-4">
           <button
             onClick={handleAddReward}
-            className="flex-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 mr-2"
+            className="w-full bg-green-600 text-white py-2 px-4 rounded-md text-md font-semibold shadow-md hover:bg-green-600 transition duration-200"
           >
             Add
-          </button>
-          <button
-            onClick={() => setIsModalOpen(false)}
-            className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-          >
-            Cancel
           </button>
         </div>
       </Modal>

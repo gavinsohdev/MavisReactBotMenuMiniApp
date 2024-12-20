@@ -64,7 +64,7 @@ const handleApproveUser = async () => {
     placeholder="Enter User ID"
     value={userId}
     onChange={(e) => setUserId(e.target.value)}
-    className="w-full max-w-full px-4 py-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+    className="w-full max-w-full px-4 py-2 text-xs border border-gray-300 rounded-lg rounded-tr-none rounded-br-none focus:outline-none focus:ring-2 focus:ring-yellow-400"
   />
   <button
     onClick={handleScanQR}

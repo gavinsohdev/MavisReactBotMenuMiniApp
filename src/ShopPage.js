@@ -9,6 +9,7 @@ import KeyboardBackspaceTwoToneIcon from "@mui/icons-material/KeyboardBackspaceT
 import CloseTwoToneIcon from "@mui/icons-material/CloseTwoTone";
 import ArrowRightTwoToneIcon from "@mui/icons-material/ArrowRightTwoTone";
 import ArrowLeftTwoToneIcon from "@mui/icons-material/ArrowLeftTwoTone";
+import bannerImage from './/images/branch-banner.jpg';
 
 const LoadingOverlay = () => (
   <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
@@ -144,7 +145,7 @@ const CartModal = ({ userId, cartData, onClose, onDeleteItem, onCheckout }) => {
                           </span>
                         </p>
                         <p className="text-sm text-gray-500">
-                          Quantity:{" "}
+                          Quantity Available:{" "}
                           <span className="font-medium">{item.quantity}</span>
                         </p>
                         {/* Branches Display */}
@@ -260,7 +261,9 @@ const OrdersModal = ({ orders, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-[90%] max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Your Orders <ListAltTwoToneIcon/></h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            Your Orders <ListAltTwoToneIcon />
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-red-500"
@@ -270,7 +273,9 @@ const OrdersModal = ({ orders, onClose }) => {
         </div>
 
         {sortedOrders.length === 0 ? (
-          <p className="text-center text-gray-500">You have no orders yet <ListAltTwoToneIcon/></p>
+          <p className="text-center text-gray-500">
+            You have no orders yet <ListAltTwoToneIcon />
+          </p>
         ) : (
           sortedOrders.map((order, index) => (
             <div key={index} className="mb-6">
@@ -297,7 +302,7 @@ const OrdersModal = ({ orders, onClose }) => {
                           {item.name}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Quantity: {item.quantity}
+                          Quantity Available: {item.quantity}
                         </p>
                         <p className="text-sm text-gray-500">
                           Price: {item.price} <MonetizationOnTwoToneIcon />
@@ -329,6 +334,7 @@ const Shop = () => {
   const [currentPage, setCurrentPage] = useState(1); // Track the current page
   const [coins, setCoins] = useState(0); // User's coins state
   const [loading, setLoading] = useState(true); // Loading state
+  const [sortOption, setSortOption] = useState("Default");
   const itemsPerPage = 2; // Number of items per page
 
   const [showCart, setShowCart] = useState(false);
@@ -606,6 +612,32 @@ const Shop = () => {
     }
   };
 
+  const handleSort = (option) => {
+    let sortedRewards = [...rewards];
+    switch (option) {
+      case "Price (Low to High)":
+        sortedRewards.sort((a, b) => a.price - b.price);
+        break;
+      case "Price (High to Low)":
+        sortedRewards.sort((a, b) => b.price - a.price);
+        break;
+      case "A-Z":
+        sortedRewards.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "Date Added (Newest to Oldest)":
+        sortedRewards.sort((a, b) => new Date(b.date_added) - new Date(a.date_added));
+        break;
+      case "Date Added (Oldest to Newest)":
+        sortedRewards.sort((a, b) => new Date(a.date_added) - new Date(b.date_added));
+        break;
+      default:
+        sortedRewards.sort((a, b) => new Date(b.date_added) - new Date(a.date_added));
+        break;
+    }
+    setRewards(sortedRewards);
+    setSortOption(option);
+  };
+
   // Calculate the start and end index of items to display for the current page
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -620,7 +652,7 @@ const Shop = () => {
       {loading && <LoadingOverlay />}
 
       {/* Navbar */}
-      <div className="w-full max-w-4xl flex justify-between items-center py-4 px-6 bg-[#333333] shadow-md">
+      <div className="w-full max-w-4xl flex justify-between items-center py-4 px-6 bg-[#333333] shadow-md z-20 relative">
         <nav className="flex space-x-4">
           <button
             onClick={() => handleGetAllOrders(id)}
@@ -658,6 +690,14 @@ const Shop = () => {
         </div>
       </div>
 
+      {/* Background Image */}
+      <div
+        className="absolute top-0 left-0 w-full h-[50vh] bg-cover bg-center z-10 opacity-65"
+        style={{
+          backgroundImage: `url(${bannerImage})`, // Access image from the public folder
+        }}
+      ></div>
+
       {/* Cart Modal */}
       {showCart && (
         <CartModal
@@ -675,21 +715,41 @@ const Shop = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex flex-col items-center min-h-screen bg-gray-50 text-gray-800 p-6">
+      <div className="flex flex-col items-center min-h-screen bg-gray-50 text-gray-800 p-6 relative">
         {/* Centered Title */}
-        <h1 className="text-3xl font-extrabold text-gray-900 text-center mb-4 tracking-tight relative">
+        <h1 className="text-3xl font-extrabold text-gray-900 text-center mb-4 tracking-tight relative z-20">
           <span className="text-red-600">Rewards</span> Page
         </h1>
 
+        {/* Sorting Dropdown */}
+        <div className="mb-6 relative z-20">
+          {/* <label htmlFor="sortRewards" className="text-gray-700 font-medium mr-2">
+            Sort by:
+          </label> */}
+          <select
+            id="sortRewards"
+            value={sortOption}
+            onChange={(e) => handleSort(e.target.value)}
+            className="border rounded px-3 py-1"
+          >
+            <option>Default</option>
+            <option>Price (Low to High)</option>
+            <option>Price (High to Low)</option>
+            <option>A-Z</option>
+            <option>Date Added (Newest to Oldest)</option>
+            <option>Date Added (Oldest to Newest)</option>
+          </select>
+        </div>
+
         {/* Rewards List */}
         {rewards.length === 0 ? (
-          <div className="text-center text-gray-500">
+          <div className="text-center text-gray-500 relative z-20">
             <p>
               No rewards available at the moment. Please check back later! 🙁
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 relative z-20">
             {paginatedRewards.map((reward) => (
               <div
                 key={reward.id}
@@ -708,7 +768,7 @@ const Shop = () => {
                   <MonetizationOnTwoToneIcon />
                 </p>
                 <p className="text-gray-600 text-center font-semibold text-sm mb-2">
-                  Quantity:{" "}
+                  Quantity Available:{" "}
                   <span className="text-gray-800">{reward.quantity}</span>
                 </p>
 

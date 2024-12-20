@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { formatISODate } from "./helpers";
-import MonetizationOnTwoToneIcon from '@mui/icons-material/MonetizationOnTwoTone';
+import { useShowPopup } from "@vkruglikov/react-telegram-web-app";
+import MonetizationOnTwoToneIcon from "@mui/icons-material/MonetizationOnTwoTone";
 import ArrowRightTwoToneIcon from "@mui/icons-material/ArrowRightTwoTone";
 import ArrowLeftTwoToneIcon from "@mui/icons-material/ArrowLeftTwoTone";
 
@@ -10,10 +11,12 @@ const RewardsList = ({
   handleUpdateReward,
   handleDeleteReward,
 }) => {
+  const showPopup = useShowPopup();
   const [editingId, setEditingId] = useState(null);
   const [editableFields, setEditableFields] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedBranches, setSelectedBranches] = useState([]);
+  const [sortOption, setSortOption] = useState("default");
   const itemsPerPage = 2;
 
   const handleSelectBranch = (branch) => {
@@ -36,12 +39,35 @@ const RewardsList = ({
     }));
   };
 
+  const sortRewards = (rewards) => {
+    switch (sortOption) {
+      case "price_low_high":
+        return [...rewards].sort((a, b) => a.price - b.price);
+      case "price_high_low":
+        return [...rewards].sort((a, b) => b.price - a.price);
+      case "a_z":
+        return [...rewards].sort((a, b) => a.name.localeCompare(b.name));
+      case "date_new_old":
+        return [...rewards].sort(
+          (a, b) => new Date(b.date_added) - new Date(a.date_added)
+        );
+      case "date_old_new":
+        return [...rewards].sort(
+          (a, b) => new Date(a.date_added) - new Date(b.date_added)
+        );
+      default:
+        return rewards;
+    }
+  };
+
+  const sortedRewards = sortRewards(rewards || []);
+
   // Sort rewards by latest date first
-  const sortedRewards = rewards
-    ? [...rewards].sort(
-        (a, b) => new Date(b.date_added) - new Date(a.date_added)
-      )
-    : [];
+  // const sortedRewards = rewards
+  //   ? [...rewards].sort(
+  //       (a, b) => new Date(b.date_added) - new Date(a.date_added)
+  //     )
+  //   : [];
 
   // Pagination logic
   const totalPages =
@@ -67,6 +93,21 @@ const RewardsList = ({
 
   return (
     <div>
+      <h1 className="text-xl font-semibold text-center mb-4">Rewards List</h1>
+      <div className="flex justify-center mb-4">
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="default">Default</option>
+          <option value="price_low_high">Price (Low to High)</option>
+          <option value="price_high_low">Price (High to Low)</option>
+          <option value="a_z">A-Z</option>
+          <option value="date_new_old">Date Added (Newest to Oldest)</option>
+          <option value="date_old_new">Date Added (Oldest to Newest)</option>
+        </select>
+      </div>
       <div className="grid grid-cols-1 gap-6">
         {currentRewards.length > 0 ? (
           currentRewards.map((reward) => (
@@ -216,9 +257,16 @@ const RewardsList = ({
                       ))}
                     </div>
                   </div>
-                  <div className="flex justify-between gap-4">
+                  <div className="flex justify-between gap-2">
                     <button
                       onClick={() => {
+                        if (selectedBranches.length === 0) {
+                          showPopup({ message: "Please select at least 1 branch" }).then(
+                            (buttonId) => console.log(buttonId)
+                          );
+                          return;
+                        }
+
                         handleUpdateReward({
                           ...reward,
                           ...editableFields,
@@ -227,7 +275,7 @@ const RewardsList = ({
                         setEditingId(null);
                         setEditableFields({});
                       }}
-                      className="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="py-2 px-4 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                       Confirm
                     </button>
@@ -236,7 +284,7 @@ const RewardsList = ({
                         setEditingId(null);
                         setEditableFields({});
                       }}
-                      className="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                      className="py-2 px-4 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
                     >
                       Cancel
                     </button>
@@ -255,11 +303,11 @@ const RewardsList = ({
                   <p className="text-sm text-center text-gray-600">
                     Price:{" "}
                     <span className="font-bold text-gray-800">
-                      {reward.price} <MonetizationOnTwoToneIcon/>
+                      {reward.price} <MonetizationOnTwoToneIcon />
                     </span>
                   </p>
                   <p className="text-sm text-center text-gray-600">
-                    Quantity:{" "}
+                    Quantity Available:{" "}
                     <span className="font-bold text-gray-800">
                       {reward.quantity}
                     </span>
@@ -324,32 +372,35 @@ const RewardsList = ({
                   </div>
                 </div>
               )}
-              {/* Pagination Controls */}
-              <div className="mt-4 flex justify-center items-center space-x-2">
-                <button
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
-                >
-                  <ArrowLeftTwoToneIcon/>
-                </button>
-                <p className="text-xs text-center">
-                  Page {currentPage} of {totalPages}
-                </p>
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
-                >
-                  <ArrowRightTwoToneIcon/>
-                </button>
-              </div>
             </div>
           ))
         ) : (
           <p className="text-center text-gray-600">No rewards available.</p>
         )}
       </div>
+
+      {/* Pagination Controls (Moved out of the loop) */}
+      {rewards.length > 0 && (
+        <div className="mt-4 flex justify-center items-center space-x-2">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
+          >
+            <ArrowLeftTwoToneIcon />
+          </button>
+          <p className="text-xs text-center">
+            Page {currentPage} of {totalPages}
+          </p>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 bg-gray-300 text-gray-700 text-xs rounded-md disabled:opacity-50 hover:bg-gray-400 disabled:cursor-not-allowed transition duration-200"
+          >
+            <ArrowRightTwoToneIcon />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

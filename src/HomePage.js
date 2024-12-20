@@ -13,6 +13,8 @@ import { QRCodeSVG } from "qrcode.react";
 import axios from "axios";
 import MonetizationOnTwoToneIcon from "@mui/icons-material/MonetizationOnTwoTone";
 import GradeTwoToneIcon from "@mui/icons-material/GradeTwoTone";
+import mavisLogo from './images/mavis_logo_red.png'
+import bannerImage from './/images/branch-banner.jpg';
 
 const App = () => {
   const navigate = useNavigate();
@@ -600,14 +602,20 @@ const App = () => {
     <div>
       {isLoading && <LoadingOverlay />}
       {isRegistered ? (
-        <div className="flex flex-col items-center min-h-screen bg-gray-50 text-gray-800 p-6">
-          {/* Background Image */}
+        <div className="flex flex-col items-center min-h-screen bg-gray-50 text-gray-800 p-6 relative">
+        {/* Background Image */}
+        <div
+          className="absolute top-0 left-0 w-full h-[50vh] bg-cover bg-center z-10 opacity-65"
+          style={{
+            backgroundImage: `url(${bannerImage})`, // Access image from the public folder
+          }}
+        ></div>
           <img
-            src="https://www.mavistutorial.com/wp-content/uploads/2023/12/Logo-01.png"
+            src={mavisLogo}
             alt="Hero Banner"
-            className="w-full"
+            className="w-full relative z-20 mt-3"
           />
-          <div className="w-full max-w-3xl p-1">
+          <div className="w-full max-w-3xl p-1 relative z-20">
             <div className="space-y-6">
               {/* User Data List */}
               <ul className="space-y-6 bg-white p-2 rounded-lg shadow-md max-w-md mx-auto">
@@ -874,95 +882,97 @@ const App = () => {
             </div>
 
             <div className="mt-8 space-y-4">
-            <div className="mb-4">
-  <label
-    htmlFor="role"
-    className="block text-sm font-medium text-gray-700 mb-2"
-  >
-    Select Role
-  </label>
-  <div className="relative">
-    <select
-      id="role"
-      value={role}
-      onChange={(e) => setRole(e.target.value)}
-      className="block w-full appearance-none bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-    >
-      <option value="Student">Student</option>
-      <option value="Teacher">Teacher</option>
-      {/* <option value="Admin">Admin</option> */}
-    </select>
-    <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
-      ▼
-    </span>
-  </div>
-</div>
+              <div className="mb-4">
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Select Role
+                </label>
+                <div className="relative">
+                  <select
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="block w-full appearance-none bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                  >
+                    <option value="Student">Student</option>
+                    <option value="Teacher">Teacher</option>
+                    {/* <option value="Admin">Admin</option> */}
+                  </select>
+                  <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
+                    ▼
+                  </span>
+                </div>
+              </div>
 
-{/* Branch Selection */}
-<div className="mb-4">
-  <label
-    htmlFor="branch"
-    className="block text-sm font-medium text-gray-700 mb-2"
-  >
-    Select Branches
-  </label>
-  <div className="relative">
-    <select
-      id="branch"
-      onChange={(e) => {
-        const selectedId = e.target.value;
-        const selectedBranch = branches.find(
-          (branch) => branch.id === selectedId
-        );
-        if (selectedBranch) {
-          handleSelectBranch(selectedBranch);
-        }
-      }}
-      className="block w-full appearance-none bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-      defaultValue=""
-    >
-      <option value="" disabled>
-        Select a branch
-      </option>
-      {branches.map((branch) => (
-        <option
-          key={branch.id}
-          value={branch.id}
-          disabled={selectedBranches.some((item) => item.id === branch.id)}
-        >
-          {branch.name}
-        </option>
-      ))}
-    </select>
-    <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
-      ▼
-    </span>
-  </div>
+              {/* Branch Selection */}
+              <div className="mb-4">
+                <label
+                  htmlFor="branch"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Select Branches
+                </label>
+                <div className="relative">
+                  <select
+                    id="branch"
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const selectedBranch = branches.find(
+                        (branch) => branch.id === selectedId
+                      );
+                      if (selectedBranch) {
+                        handleSelectBranch(selectedBranch);
+                      }
+                    }}
+                    className="block w-full appearance-none bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select a branch
+                    </option>
+                    {branches.map((branch) => (
+                      <option
+                        key={branch.id}
+                        value={branch.id}
+                        disabled={selectedBranches.some(
+                          (item) => item.id === branch.id
+                        )}
+                      >
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute inset-y-0 right-2 flex items-center pointer-events-none text-gray-500">
+                    ▼
+                  </span>
+                </div>
 
-  <div className="mt-4 space-y-2">
-    {selectedBranches.map((branch) => (
-      <div
-        key={branch.id}
-        className="flex items-center justify-between border border-gray-300 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition"
-      >
-        <span className="text-gray-800">{branch.name}</span>
-        <button
-          onClick={() => handleRemoveBranch(branch.id)}
-          className="text-red-500 hover:text-red-700"
-        >
-          Remove
-        </button>
-      </div>
-    ))}
-  </div>
-</div>
+                <div className="mt-4 space-y-2">
+                  {selectedBranches.map((branch) => (
+                    <div
+                      key={branch.id}
+                      className="flex items-center justify-between border border-gray-300 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition"
+                    >
+                      <span className="text-gray-800">{branch.name}</span>
+                      <button
+                        onClick={() => handleRemoveBranch(branch.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-<button
-  onClick={registerUser}
-  className="w-full bg-red-600 text-white py-3 px-4 rounded-lg text-lg font-semibold shadow-md hover:bg-pink-600 transition duration-200"
->
-  Register
-</button>
+              <button
+                onClick={registerUser}
+                className="w-full bg-red-600 text-white py-3 px-4 rounded-lg text-lg font-semibold shadow-md hover:bg-pink-600 transition duration-200"
+              >
+                Register
+              </button>
             </div>
           </div>
         </div>
