@@ -18,7 +18,7 @@ const RegistrationPendingPage = () => {
       <img
         src={mavisLogo}
         alt="Hero Banner"
-        className="w-full relative z-20 mt-3"
+        className="w-full relative z-20 mt-6"
       />
       <div className="bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center relative z-20">
         <h1 className="text-3xl font-bold text-red-500 mb-4">
