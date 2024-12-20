@@ -861,7 +861,7 @@ const App = () => {
           <img
             src={mavisLogo}
             alt="Hero Banner"
-            className="w-full relative z-20"
+            className="w-full relative z-20 mt-3"
           />
           {/* <MainButton onClick={handleMainButtonClick} text="Main Button" /> */}
           <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-8 relative z-20">
