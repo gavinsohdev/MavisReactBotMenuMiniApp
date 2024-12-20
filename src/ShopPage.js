@@ -744,7 +744,7 @@ const Shop = () => {
         {/* Rewards List */}
         {rewards.length === 0 ? (
           <div className="text-center text-gray-500 relative z-20">
-            <p>
+            <p className="text-xl font-semibold text-white">
               No rewards available at the moment. Please check back later! 🙁
             </p>
           </div>
