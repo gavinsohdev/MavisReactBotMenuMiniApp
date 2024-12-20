@@ -849,15 +849,22 @@ const App = () => {
           </div>
         </div>
       ) : (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6 relative">
           <BackButton onClick={handleBackButtonClick} />
+          {/* Background Image */}
+          <div
+            className="absolute top-0 left-0 w-full h-[50vh] bg-cover bg-center z-10 opacity-65"
+            style={{
+              backgroundImage: `url(${bannerImage})`, // Access image from the public folder
+            }}
+          ></div>
           <img
-            src="https://www.mavistutorial.com/wp-content/uploads/2023/12/Logo-01.png"
+            src={mavisLogo}
             alt="Hero Banner"
-            className="w-full"
+            className="w-full relative z-20"
           />
           {/* <MainButton onClick={handleMainButtonClick} text="Main Button" /> */}
-          <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-8">
+          <div className="bg-white shadow-xl rounded-lg w-full max-w-md p-8 relative z-20">
             {/* Header */}
             <header className="flex flex-col items-center justify-center">
               <h1 className="text-4xl font-extrabold text-gray-800 tracking-tight mb-6">
