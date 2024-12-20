@@ -829,7 +829,7 @@ const App = () => {
                               onClick={() =>
                                 handleUpdateUserCoinsSubmit(targetUserId)
                               }
-                              className="px-6 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                              className="px-6 py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
                             >
                               Update
                             </button>
