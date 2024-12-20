@@ -1,18 +1,26 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
+import mavisLogo from './images/mavis_logo_red.png'
+import bannerImage from './/images/branch-banner.jpg';
 
 const RegistrationPendingPage = () => {
   const { userId } = useParams();
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gray-50 p-6">
+    <div className="min-h-screen flex flex-col items-center bg-gray-50 p-6 relative">
       {/* Background Image */}
+      <div
+        className="absolute top-0 left-0 w-full h-[50vh] bg-cover bg-center z-10 opacity-65"
+        style={{
+          backgroundImage: `url(${bannerImage})`, // Access image from the public folder
+        }}
+      ></div>
       <img
-        src="https://www.mavistutorial.com/wp-content/uploads/2023/12/Logo-01.png"
+        src={mavisLogo}
         alt="Hero Banner"
-        className="w-full"
+        className="w-full relative z-20 mt-3"
       />
-      <div className="bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center">
+      <div className="bg-white shadow-md rounded-xl p-6 max-w-md mx-auto text-center relative z-20">
         <h1 className="text-3xl font-bold text-red-500 mb-4">
           Approval Pending
         </h1>
